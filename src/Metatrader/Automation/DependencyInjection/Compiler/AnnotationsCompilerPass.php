@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\DependencyInjection\Compiler;
 
+use App\Metatrader\Automation\Annotation\After;
+use App\Metatrader\Automation\Annotation\Before;
 use App\Metatrader\Automation\Annotation\Dependency;
 use App\Metatrader\Automation\Annotation\Listen;
 use App\Metatrader\Automation\Annotation\Subscriber;
@@ -63,13 +65,18 @@ class AnnotationsCompilerPass implements CompilerPassInterface
     {
         if ($this->annotationReader->getClassAnnotation($reflectionClass, Subscriber::class))
         {
+            $methods = [];
+
             foreach ($reflectionClass->getMethods() as $method)
             {
                 if ('Event' === mb_substr($method->getName(), -5))
                 {
                     $this->registerEventListener($definition, $method);
+                    $methods[] = $method;
                 }
             }
+
+            $this->updatePriority($definition, $methods);
         }
     }
 
@@ -138,5 +145,72 @@ class AnnotationsCompilerPass implements CompilerPassInterface
                 'method' => $method->getName(),
             ]
         );
+    }
+
+    /**
+     * @return null|After|Before
+     */
+    private function getPriorityAnnotation(\ReflectionMethod $method)
+    {
+        if ($annotation = $this->annotationReader->getMethodAnnotation($method, After::class))
+        {
+            return $annotation;
+        }
+
+        if ($annotation = $this->annotationReader->getMethodAnnotation($method, Before::class))
+        {
+            return $annotation;
+        }
+    }
+
+    private function updatePriority(Definition $definition, array $methods): void
+    {
+        $listeners = $definition->getTag('kernel.event_listener');
+
+        foreach ($methods as $method)
+        {
+            if (!$annotation = $this->getPriorityAnnotation($method))
+            {
+                continue;
+            }
+
+            while (true)
+            {
+                foreach ($listeners as &$listener)
+                {
+                    if ($listener['method'] === $annotation->method && !isset($priority))
+                    {
+                        $priority = $listener['priority'] ?? 0;
+
+                        break;
+                    }
+
+                    if ($listener['method'] === $method->name && isset($priority))
+                    {
+                        switch (true)
+                        {
+                            case $annotation instanceof After:
+                                $listener['priority'] = $priority - 1;
+
+                                break;
+
+                            case $annotation instanceof Before:
+                                $listener['priority'] = $priority + 1;
+
+                                break;
+                        }
+
+                        $definition->clearTag('kernel.event_listener');
+
+                        foreach ($listeners as $tag)
+                        {
+                            $definition->addTag('kernel.event_listener', $tag);
+                        }
+
+                        break 2;
+                    }
+                }
+            }
+        }
     }
 }

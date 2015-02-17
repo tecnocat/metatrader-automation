@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Helper;
 
 use App\Metatrader\Automation\DTO\TerminalDTO;
+use App\Metatrader\Automation\Event\Metatrader\FindTerminalEvent;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -49,6 +50,26 @@ class TerminalHelper
                 throw new \RuntimeException('Timeout waiting a free terminal configured in path ' . $dataPath);
             }
         }
+    }
+
+    public static function syncExpertAdvisor(FindTerminalEvent $event): void
+    {
+        $originalTerminalDTO = self::findOriginalTerminal($event->getDataPath());
+        $expertAdvisor       = $event->getExecutionEvent()->getExpertAdvisor();
+        $terminalDTO         = $event->getTerminalDTO();
+        $version             = $originalTerminalDTO->version;
+        $path                = implode(DIRECTORY_SEPARATOR, ['MQL' . $version, 'Experts', $expertAdvisor->getName() . '.ex' . $version]);
+        $source              = $originalTerminalDTO->path . DIRECTORY_SEPARATOR . $path;
+        $target              = $terminalDTO->path . DIRECTORY_SEPARATOR . $path;
+
+        if (CacheHelper::getCache(__METHOD__, $target))
+        {
+            return;
+        }
+
+        $filesystem = new Filesystem();
+        $filesystem->copy($source, $target, true);
+        CacheHelper::setCache(__METHOD__, $target, true);
     }
 
     private static function createCluster(string $dataPath): void

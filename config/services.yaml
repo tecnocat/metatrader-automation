@@ -4,7 +4,10 @@ parameters:
     data_path: C:\Users\Alpha\AppData\Roaming\MetaQuotes\Terminal
     expert_advisors:
       Bartolo:
-        active: false
+        active: true
+        # ESTRATEGIA_C
+        inputs:
+          Tiempo: 5, 1440, 5
       Fermin:
         active: false
       Prudencio:

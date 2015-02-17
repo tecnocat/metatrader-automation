@@ -17,5 +17,6 @@ class TerminalSubscriber extends AbstractEventSubscriber
     {
         $event->setTerminalDTO(TerminalHelper::findOneFree($event->getDataPath()));
         $event->getExecutionEvent()->setTerminalDTO($event->getTerminalDTO());
+        TerminalHelper::syncExpertAdvisor($event);
     }
 }

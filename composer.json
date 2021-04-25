@@ -1,0 +1,21 @@
+{
+    "authors"      : [
+        {
+            "name" : "Alpha",
+            "email": "alpha@pulsarcode.com"
+        }
+    ],
+    "autoload"     : {
+        "psr-0": {
+            "": "src/"
+        }
+    },
+    "description"  : "PHP console commands to automate Metatrader backtests",
+    "license"      : "MIT",
+    "name"         : "tecnocat/metatrader-automation",
+    "prefer-stable": true,
+    "require"      : {
+        "php"            : ">=7.4.6",
+        "symfony/console": "^5.2"
+    }
+}

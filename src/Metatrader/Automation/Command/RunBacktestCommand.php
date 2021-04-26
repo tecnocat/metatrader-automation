@@ -13,6 +13,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * Class RunBacktestCommand
+ *
+ * @package Metatrader\Automation\Command
+ */
 class RunBacktestCommand extends Command
 {
     /**

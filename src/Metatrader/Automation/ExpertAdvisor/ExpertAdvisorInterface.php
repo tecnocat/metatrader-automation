@@ -2,6 +2,11 @@
 
 namespace Metatrader\Automation\ExpertAdvisor;
 
+/**
+ * Interface ExpertAdvisorInterface
+ *
+ * @package Metatrader\Automation\ExpertAdvisor
+ */
 interface ExpertAdvisorInterface
 {
     /**

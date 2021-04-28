@@ -56,6 +56,7 @@ class RunBacktestCommand extends Command
     {
         $this->setInputOutputStyle($input, $output);
 
+        // TODO: Use input event
         $name    = $input->getArgument('name');
         $symbol  = $input->getArgument('symbol');
         $period  = $input->getArgument('period');
@@ -63,6 +64,8 @@ class RunBacktestCommand extends Command
         $from    = $input->getArgument('from');
         $to      = $input->getArgument('to');
 
+        // TODO: Use validator service
+        $this->validateName($name);
         $this->validatePeriod($period);
         $this->validateDeposit($deposit);
         $this->validateDates($from, $to);
@@ -72,6 +75,7 @@ class RunBacktestCommand extends Command
         $this->io->comment('Executing Metatrader Automation...');
         $this->io->table($headers, $rows);
 
+        // TODO: Use construct event
         $expertAdvisor = $this->getExpertAdvisorInstance($name);
         $backtest      = new Backtest();
         $backtest->setExpertAdvisor($expertAdvisor);
@@ -96,17 +100,13 @@ class RunBacktestCommand extends Command
     }
 
     /**
-     * @param string $period
-     *
-     * @throws Exception
+     * @param string $name
      */
-    private function validatePeriod(string $period): void
+    private function validateName(string $name): void
     {
-        $periods = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1', 'MN1'];
-
-        if (!in_array($period, $periods))
+        if (!class_exists(AbstractExpertAdvisor::getExpertAdvisorClass($name)))
         {
-            $this->exit('Invalid period ' . $period . ' supplied, allowed values: ' . implode(', ', $periods));
+            $this->exit('Not implemented or missing the Expert Advisor ' . $name);
         }
     }
 
@@ -126,6 +126,21 @@ class RunBacktestCommand extends Command
         }
 
         exit($exitCode);
+    }
+
+    /**
+     * @param string $period
+     *
+     * @throws Exception
+     */
+    private function validatePeriod(string $period): void
+    {
+        $periods = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1', 'MN1'];
+
+        if (!in_array($period, $periods))
+        {
+            $this->exit('Invalid period ' . $period . ' supplied, allowed values: ' . implode(', ', $periods));
+        }
     }
 
     /**
@@ -188,11 +203,6 @@ class RunBacktestCommand extends Command
     private function getExpertAdvisorInstance(string $expertAdvisorName): AbstractExpertAdvisor
     {
         $class = AbstractExpertAdvisor::getExpertAdvisorClass($expertAdvisorName);
-
-        if (!class_exists($class))
-        {
-            $this->exit('Not implemented or missing the Expert Advisor ' . $expertAdvisorName);
-        }
 
         // TODO: Load config from .yaml
         $config = new ExpertAdvisorConfig([]);

@@ -1,14 +1,14 @@
 <?php
 
-namespace Metatrader\Automation\Backtest;
+namespace App\Metatrader\Automation\Backtest;
 
+use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
 use DateTime;
-use Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
 
 /**
  * Interface BacktestInterface
  *
- * @package Metatrader\Automation\Backtest
+ * @package App\Metatrader\Automation\Backtest
  */
 interface BacktestInterface
 {

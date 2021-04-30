@@ -1,13 +1,13 @@
 <?php
 
-namespace Metatrader\Automation\ExpertAdvisor;
+namespace App\Metatrader\Automation\ExpertAdvisor;
 
 use Exception;
 
 /**
  * Class ExpertAdvisorConfig
  *
- * @package Metatrader\Automation\ExpertAdvisor
+ * @package App\Metatrader\Automation\ExpertAdvisor
  */
 class ExpertAdvisorConfig
 {

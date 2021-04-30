@@ -1,12 +1,12 @@
 <?php
 
-namespace Metatrader\Automation\Command;
+namespace App\Metatrader\Automation\Command;
 
+use App\Metatrader\Automation\Backtest\Backtest;
+use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
+use App\Metatrader\Automation\ExpertAdvisor\ExpertAdvisorConfig;
 use DateTime;
 use Exception;
-use Metatrader\Automation\Backtest\Backtest;
-use Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
-use Metatrader\Automation\ExpertAdvisor\ExpertAdvisorConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Class RunBacktestCommand
  *
- * @package Metatrader\Automation\Command
+ * @package App\Metatrader\Automation\Command
  */
 class RunBacktestCommand extends Command
 {

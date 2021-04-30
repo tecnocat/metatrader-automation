@@ -1,11 +1,11 @@
 <?php
 
-namespace Metatrader\Automation\ExpertAdvisor;
+namespace App\Metatrader\Automation\ExpertAdvisor;
 
 /**
  * Class AbstractExpertAdvisor
  *
- * @package Metatrader\Automation\ExpertAdvisor
+ * @package App\Metatrader\Automation\ExpertAdvisor
  */
 class AbstractExpertAdvisor implements ExpertAdvisorInterface
 {

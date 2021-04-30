@@ -1,11 +1,11 @@
 <?php
 
-namespace Metatrader\Automation\Backtest;
+namespace App\Metatrader\Automation\Backtest;
 
 /**
  * Interface BacktestReportInterface
  *
- * @package Metatrader\Automation\Backtest
+ * @package App\Metatrader\Automation\Backtest
  */
 interface BacktestReportInterface
 {

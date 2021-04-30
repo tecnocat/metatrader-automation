@@ -1,11 +1,11 @@
 <?php
 
-namespace Metatrader\Automation\ExpertAdvisor;
+namespace App\Metatrader\Automation\ExpertAdvisor;
 
 /**
  * Class Prudencio
  *
- * @package Metatrader\Automation\ExpertAdvisor
+ * @package App\Metatrader\Automation\ExpertAdvisor
  */
 class Prudencio extends AbstractExpertAdvisor
 {

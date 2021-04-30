@@ -1,11 +1,11 @@
 <?php
 
-namespace Metatrader\Automation\ExpertAdvisor;
+namespace App\Metatrader\Automation\ExpertAdvisor;
 
 /**
  * Interface ExpertAdvisorInterface
  *
- * @package Metatrader\Automation\ExpertAdvisor
+ * @package App\Metatrader\Automation\ExpertAdvisor
  */
 interface ExpertAdvisorInterface
 {

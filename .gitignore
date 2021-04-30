@@ -1,3 +1,13 @@
-.idea
-composer.lock
-vendor
+###> jetbrains/phpstorm ###
+/.idea/
+###< jetbrains/phpstorm ###
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+###< symfony/framework-bundle ###

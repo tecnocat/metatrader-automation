@@ -11,7 +11,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
-use function dirname;
 
 /**
  * Class Kernel
@@ -24,6 +23,8 @@ class Kernel extends BaseKernel implements CompilerPassInterface
 
     /**
      * @param ContainerBuilder $container
+     *
+     * @throws \ReflectionException
      */
     public function process(ContainerBuilder $container): void
     {

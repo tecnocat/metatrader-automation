@@ -1,138 +1,83 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Metatrader\Automation\Helper;
 
-use DateTime;
-use Exception;
-use ReflectionClass;
-use ReflectionException;
-use ReflectionProperty;
-use ReflectionType;
-
-/**
- * Class ClassTools
- *
- * @package App\Metatrader\Automation\Helper
- */
 class ClassTools
 {
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
     public static function getCamelCaseDashed(string $name): string
     {
         return self::getCamelCaseGlue($name, '-');
     }
 
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
     public static function getCamelCaseDotted(string $name): string
     {
         return self::getCamelCaseGlue($name, '.');
     }
 
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
     public static function getCamelCaseUnderscore(string $name): string
     {
         return self::getCamelCaseGlue($name, '_');
     }
 
-    /**
-     * @param $object
-     *
-     * @return string
-     */
-    public static function getClassNameDashed($object): string
+    public static function getClassNameDashed(object $object): string
     {
         return self::getClassNameGlue($object, '-');
     }
 
-    /**
-     * @param $object
-     *
-     * @return string
-     */
-    public static function getClassNameDotted($object): string
+    public static function getClassNameDotted(object $object): string
     {
         return self::getClassNameGlue($object, '.');
     }
 
-    /**
-     * @param $object
-     *
-     * @return string
-     */
-    public static function getClassNameUnderscore($object): string
+    public static function getClassNameUnderscore(object $object): string
     {
         return self::getClassNameGlue($object, '_');
     }
 
-    /**
-     * @param        $object
-     * @param string $name
-     *
-     * @return mixed
-     */
-    public static function getPropertyValue($object, string $name)
+    public static function getPropertyValue(object $object, string $name)
     {
         $property = self::getAccessibleProperty($object, $name);
 
         return $property->getValue($object);
     }
 
-    /**
-     * @param        $object
-     * @param string $name
-     *
-     * @return bool
-     * @throws ReflectionException
-     */
-    public static function hasProperty($object, string $name): bool
+    public static function hasProperty(object $object, string $name): bool
     {
         return self::getReflection($object)->hasProperty($name);
     }
 
     /**
-     * @param        $object
-     * @param string $name
-     * @param        $value
-     *
-     * @throws ReflectionException
+     * @param bool|\DateTime|float|int|mixed|string $value
      */
-    public static function setPropertyValue($object, string $name, $value): void
+    public static function setPropertyValue(object $object, string $name, $value): void
     {
         $property = self::getAccessibleProperty($object, $name);
         $property->setValue($object, self::castToType($object, $name, $value));
     }
 
     /**
-     * @param        $object
-     * @param string $name
-     * @param        $value
+     * @param bool|\DateTime|float|int|mixed|string $value
      *
-     * @return bool|DateTime|float|int|string
-     * @throws ReflectionException
+     * @return bool|\DateTime|float|int|mixed|string
      */
-    private static function castToType($object, string $name, $value)
+    private static function castToType(object $object, string $name, $value)
     {
-        $propertyType = self::getPropertyType($object, $name);
-
-        switch ($propertyType->getName())
+        switch (self::getPropertyType($object, $name))
         {
             case 'bool':
                 return (bool) $value;
 
             case 'DateTime':
-                return new DateTime($value);
+                try
+                {
+                    return new \DateTime($value);
+                }
+                catch (\Exception $e)
+                {
+                    return $value;
+                }
 
             case 'float':
                 return (float) $value;
@@ -144,54 +89,11 @@ class ClassTools
                 return (string) $value;
 
             default:
-                throw new Exception('Unsupported this value type: ' . $propertyType->getName());
+                return $value;
         }
     }
 
-    /**
-     * @param string $name
-     * @param string $glue
-     *
-     * @return string
-     */
-    private static function getCamelCaseGlue(string $name, string $glue): string
-    {
-        return ltrim(mb_strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', $glue . '$0', $name)), $glue);
-    }
-
-    /**
-     * @param        $object
-     * @param string $glue
-     *
-     * @return string
-     * @throws ReflectionException
-     */
-    private static function getClassNameGlue($object, string $glue): string
-    {
-        $reflection = self::getReflection($object);
-
-        return self::getCamelCaseGlue($reflection->getShortName(), $glue);
-    }
-
-    /**
-     * @param $object
-     *
-     * @return ReflectionClass
-     * @throws ReflectionException
-     */
-    private static function getReflection($object): ReflectionClass
-    {
-        return $object instanceof ReflectionClass ? $object : new ReflectionClass($object);
-    }
-
-    /**
-     * @param        $object
-     * @param string $name
-     *
-     * @return ReflectionProperty
-     * @throws ReflectionException
-     */
-    private static function getAccessibleProperty($object, string $name): ReflectionProperty
+    private static function getAccessibleProperty(object $object, string $name): \ReflectionProperty
     {
         $property = self::getProperty($object, $name);
         $property->setAccessible(true);
@@ -199,38 +101,37 @@ class ClassTools
         return $property;
     }
 
-    /**
-     * @param $object
-     *
-     * @return array
-     * @throws ReflectionException
-     */
-    private static function getProperties($object): array
+    private static function getCamelCaseGlue(string $name, string $glue): string
     {
-        return self::getReflection($object)->getProperties();
+        return ltrim(mb_strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', $glue . '$0', $name)), $glue);
     }
 
-    /**
-     * @param        $object
-     * @param string $name
-     *
-     * @return ReflectionProperty
-     * @throws ReflectionException
-     */
-    private static function getProperty($object, string $name): ReflectionProperty
+    private static function getClassNameGlue(object $object, string $glue): string
+    {
+        $reflection = self::getReflection($object);
+
+        return self::getCamelCaseGlue($reflection->getShortName(), $glue);
+    }
+
+    private static function getProperty(object $object, string $name): \ReflectionProperty
     {
         return self::getReflection($object)->getProperty($name);
     }
 
-    /**
-     * @param        $object
-     * @param string $name
-     *
-     * @return ReflectionType
-     * @throws ReflectionException
-     */
-    private static function getPropertyType($object, string $name): ReflectionType
+    private static function getPropertyType(object $object, string $name): string
     {
-        return self::getProperty($object, $name)->getType();
+        $property = self::getProperty($object, $name);
+
+        if ($property->hasType())
+        {
+            return (string) $property->getType();
+        }
+
+        return 'string';
+    }
+
+    private static function getReflection(object $object): \ReflectionClass
+    {
+        return $object instanceof \ReflectionClass ? $object : new \ReflectionClass($object);
     }
 }

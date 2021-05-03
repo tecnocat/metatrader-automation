@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Metatrader\Automation\Command;
 
 use App\Metatrader\Automation\Event\AbstractEvent;
@@ -10,28 +12,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-/**
- * Class AbstractCommand
- *
- * @package App\Metatrader\Automation\Command
- */
 abstract class AbstractCommand extends Command
 {
-    /**
-     * @var EventDispatcherInterface
-     */
     private EventDispatcherInterface $eventDispatcher;
+    private SymfonyStyle             $io;
 
-    /**
-     * @var SymfonyStyle
-     */
-    private SymfonyStyle $io;
-
-    /**
-     * AbstractCommand constructor.
-     *
-     * @param EventDispatcherInterface $eventDispatcher
-     */
     public function __construct(EventDispatcherInterface $eventDispatcher)
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -40,76 +25,51 @@ abstract class AbstractCommand extends Command
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return int
-     */
-    final protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $this->io = new SymfonyStyle($input, $output);
-
-        return $this->command($input, $output);
-    }
-
-    /**
-     * @return string
-     */
-    final protected function generateName(): string
-    {
-        return substr(ClassTools::getClassNameDashed($this), 0, -8);
-    }
-
-    /**
-     * @param AbstractEvent $event
-     *
-     * @return object
-     */
-    final protected function dispatch(AbstractEvent $event): object
-    {
-        return $this->eventDispatcher->dispatch($event, $event->getEventName());
-    }
-
-    /**
-     * @param string|array $message
+     * @param array|string $message
      */
     final protected function comment($message): void
     {
         $this->io->comment($message);
     }
 
-    /**
-     * @param array $headers
-     * @param array $rows
-     */
-    final protected function table(array $headers, array $rows): void
+    final protected function dispatch(AbstractEvent $event): object
     {
-        $this->io->table($headers, $rows);
+        return $this->eventDispatcher->dispatch($event, $event->getEventName());
     }
 
-    /**
-     * @param string $message
-     */
-    final protected function error(string $message)
+    final protected function error(string $message): void
     {
         $this->io->error($message);
     }
 
-    /**
-     * @param string $message
-     * @param int    $exitCode
-     */
+    final protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $this->io = new SymfonyStyle($input, $output);
+
+        return $this->process($input);
+    }
+
     final protected function exit(string $message, int $exitCode = Command::FAILURE): void
     {
-        if (Command::FAILURE == $exitCode)
+        if (Command::FAILURE === $exitCode)
         {
             $this->io->error($message);
         }
-        elseif (Command::SUCCESS == $exitCode)
+        elseif (Command::SUCCESS === $exitCode)
         {
             $this->io->info($message);
         }
 
         exit($exitCode);
+    }
+
+    final protected function generateName(): string
+    {
+        return mb_substr(ClassTools::getClassNameDashed($this), 0, -8);
+    }
+
+    final protected function table(array $headers, array $rows): void
+    {
+        $this->io->table($headers, $rows);
     }
 }

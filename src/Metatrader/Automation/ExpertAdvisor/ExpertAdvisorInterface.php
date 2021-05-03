@@ -1,28 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Metatrader\Automation\ExpertAdvisor;
 
-/**
- * Interface ExpertAdvisorInterface
- *
- * @package App\Metatrader\Automation\ExpertAdvisor
- */
 interface ExpertAdvisorInterface
 {
-    /**
-     * @param string $expertAdvisorName
-     *
-     * @return string
-     */
     public static function getExpertAdvisorClass(string $expertAdvisorName): string;
 
-    /**
-     * @return string
-     */
-    public function getName(): string;
-
-    /**
-     * @return ExpertAdvisorConfig
-     */
     public function getConfig(): ExpertAdvisorConfig;
+
+    public function getName(): string;
 }

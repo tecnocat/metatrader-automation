@@ -1,28 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Metatrader\Automation\Validator\Constraints;
 
 use App\Metatrader\Automation\Helper\ClassTools;
 use DateTime;
-use ReflectionException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
-/**
- * Class DateValidator
- *
- * @package App\Metatrader\Automation\Validator\Constraints
- */
 class DateValidator extends ConstraintValidator
 {
     public const MINIMUM_DATE = '2013-01-01';
 
     /**
-     * @param mixed      $value
-     * @param Constraint $constraint
-     *
-     * @throws ReflectionException
+     * @param string $value
      */
     public function validate($value, Constraint $constraint)
     {

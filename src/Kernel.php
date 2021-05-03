@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
 use App\Metatrader\Automation\Annotation\Subscriber;
@@ -12,18 +14,11 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
-/**
- * Class Kernel
- *
- * @package App
- */
 class Kernel extends BaseKernel implements CompilerPassInterface
 {
     use MicroKernelTrait;
 
     /**
-     * @param ContainerBuilder $container
-     *
      * @throws \ReflectionException
      */
     public function process(ContainerBuilder $container): void
@@ -33,7 +28,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
 
         foreach ($classMap as $className => $classFile)
         {
-            if (false === strpos(realpath($classFile), __DIR__))
+            if (false === mb_strpos(realpath($classFile), __DIR__))
             {
                 continue;
             }
@@ -70,9 +65,6 @@ class Kernel extends BaseKernel implements CompilerPassInterface
         }
     }
 
-    /**
-     * @param ContainerConfigurator $container
-     */
     protected function configureContainer(ContainerConfigurator $container): void
     {
         $container->import('../config/{packages}/*.yaml');
@@ -89,9 +81,6 @@ class Kernel extends BaseKernel implements CompilerPassInterface
         }
     }
 
-    /**
-     * @param RoutingConfigurator $routes
-     */
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
         $routes->import('../config/{routes}/' . $this->environment . '/*.yaml');

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Metatrader\Automation\Validator\Constraints;
 
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
@@ -7,16 +9,10 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
-/**
- * Class ExpertAdvisorValidator
- *
- * @package App\Metatrader\Automation\Validator\Constraints
- */
 class ExpertAdvisorValidator extends ConstraintValidator
 {
     /**
-     * @param mixed      $value
-     * @param Constraint $constraint
+     * @param string $value
      */
     public function validate($value, Constraint $constraint)
     {

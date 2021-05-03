@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types=1);
+
 use App\Kernel;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -18,9 +20,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 
 if (!class_exists(Application::class) || !class_exists(Dotenv::class))
 {
-    throw new LogicException(
-        'You need to add "symfony/framework-bundle" and "symfony/dotenv" as Composer dependencies.'
-    );
+    throw new LogicException('You need to add "symfony/framework-bundle" and "symfony/dotenv" as Composer dependencies.');
 }
 
 $input = new ArgvInput();
@@ -49,4 +49,11 @@ if ($_SERVER['APP_DEBUG'])
 
 $kernel      = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
 $application = new Application($kernel);
-$application->run($input);
+
+try
+{
+    $application->run($input);
+}
+catch (Exception $e)
+{
+}

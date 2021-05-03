@@ -1,110 +1,107 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Metatrader\Automation\Model;
 
+use App\Metatrader\Automation\Validator\Constraints as Validators;
 use DateTime;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Metatrader\Automation\Validator\Constraints as Validators;
 
-/**
- * Class BacktestModel
- *
- * @package App\Metatrader\Automation\Model
- */
 class BacktestModel extends AbstractModel
 {
     /**
      * @Assert\NotBlank
-     * @Validators\ExpertAdvisor
-     *
-     * @var string
-     */
-    private string $name;
-
-    /**
-     * @Assert\NotBlank
-     *
-     * @var string
-     */
-    private string $symbol;
-
-    /**
-     * @Assert\NotBlank
-     * @Assert\Choice({"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1"})
-     *
-     * @var string
-     */
-    private string $period;
-
-    /**
-     * @Assert\NotBlank
      * @Assert\GreaterThanOrEqual(500)
-     *
-     * @var int
      */
     private int $deposit;
 
     /**
      * @Assert\NotBlank
      * @Validators\Date("Y-m-d")
-     *
-     * @var DateTime
      */
     private DateTime $from;
 
     /**
      * @Assert\NotBlank
+     * @Validators\ExpertAdvisor
+     */
+    private string $name;
+
+    /**
+     * @Assert\NotBlank
+     * @Assert\Choice({"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1"})
+     */
+    private string $period;
+
+    /**
+     * @Assert\NotBlank
+     */
+    private string $symbol;
+
+    /**
+     * @Assert\NotBlank
      * @Validators\Date("Y-m-d")
-     *
-     * @var DateTime
      */
     private DateTime $to;
 
-    /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSymbol(): string
-    {
-        return $this->symbol;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPeriod(): string
-    {
-        return $this->period;
-    }
-
-    /**
-     * @return int
-     */
     public function getDeposit(): int
     {
         return $this->deposit;
     }
 
-    /**
-     * @return DateTime
-     */
+    public function setDeposit(int $deposit): void
+    {
+        $this->deposit = $deposit;
+    }
+
     public function getFrom(): DateTime
     {
         return $this->from;
     }
 
-    /**
-     * @return DateTime
-     */
+    public function setFrom(DateTime $from): void
+    {
+        $this->from = $from;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getPeriod(): string
+    {
+        return $this->period;
+    }
+
+    public function setPeriod(string $period): void
+    {
+        $this->period = $period;
+    }
+
+    public function getSymbol(): string
+    {
+        return $this->symbol;
+    }
+
+    public function setSymbol(string $symbol): void
+    {
+        $this->symbol = $symbol;
+    }
+
     public function getTo(): DateTime
     {
         return $this->to;
+    }
+
+    public function setTo(DateTime $to): void
+    {
+        $this->to = $to;
     }
 }

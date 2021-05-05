@@ -7,13 +7,17 @@ one test at a time)
 
 ## Current development
 
-* System to load Expert Advisor settings based on .yaml files
+* ~~Prepare command basics with components and workflow events~~
+* ~~System to load Expert Advisor settings based on .yaml files~~
 * Expert Advisor iterator for each available backtest settings
 
 ## Next steps
 
+* Cluster generator (copy many instances of main Metatrader 4)
 * Workflow steps to detect Metatrader 4 instances free to run
 * System to handle start / stop of Tick Data Suite during backtest
+* Backtest report parser (to future store in database with Doctrine)
+* Multiple Expert Advisors and symbols to backtesting at same time
 
 ### Requirements
 

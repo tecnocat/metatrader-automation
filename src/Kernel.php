@@ -18,51 +18,9 @@ class Kernel extends BaseKernel implements CompilerPassInterface
 {
     use MicroKernelTrait;
 
-    /**
-     * @throws \ReflectionException
-     */
     public function process(ContainerBuilder $container): void
     {
-        $annotationReader = new AnnotationReader();
-        $classMap         = require __DIR__ . '/../vendor/composer/autoload_classmap.php';
-
-        foreach ($classMap as $className => $classFile)
-        {
-            if (false === mb_strpos(realpath($classFile), __DIR__))
-            {
-                continue;
-            }
-
-            $reflectionClass = new \ReflectionClass($className);
-
-            foreach ($annotationReader->getClassAnnotations($reflectionClass) as $annotation)
-            {
-                if (!$annotation instanceof Subscriber)
-                {
-                    continue;
-                }
-
-                $id         = 'app.' . ClassTools::getClassNameUnderscore($reflectionClass);
-                $definition = $container->autowire($id, $className);
-
-                foreach ($reflectionClass->getMethods() as $method)
-                {
-                    if (!preg_match('/^on(.*)Event$/', $method->getName(), $matches))
-                    {
-                        continue;
-                    }
-
-                    $event = str_replace('.subscriber', '', ClassTools::getClassNameDotted($reflectionClass));
-                    $definition->addTag(
-                        'kernel.event_listener',
-                        [
-                            'event'  => $event . '.' . ClassTools::getCamelCaseDotted($matches[1]),
-                            'method' => $method->getName(),
-                        ]
-                    );
-                }
-            }
-        }
+        $this->loadEventSubscribers($container);
     }
 
     protected function configureContainer(ContainerConfigurator $container): void
@@ -93,6 +51,57 @@ class Kernel extends BaseKernel implements CompilerPassInterface
         elseif (is_file($path = dirname(__DIR__) . '/config/routes.php'))
         {
             (require $path)($routes->withPath($path), $this);
+        }
+    }
+
+    private function loadEventSubscribers(ContainerBuilder $container): void
+    {
+        $annotationReader = new AnnotationReader();
+        $classMap         = require __DIR__ . '/../vendor/composer/autoload_classmap.php';
+
+        foreach ($classMap as $className => $classFile)
+        {
+            if (false === mb_strpos(realpath($classFile), __DIR__))
+            {
+                continue;
+            }
+
+            try
+            {
+                $reflectionClass = new \ReflectionClass($className);
+            }
+            catch (\ReflectionException $e)
+            {
+                continue;
+            }
+
+            foreach ($annotationReader->getClassAnnotations($reflectionClass) as $annotation)
+            {
+                if (!$annotation instanceof Subscriber)
+                {
+                    continue;
+                }
+
+                $id         = 'app.' . ClassTools::getClassNameUnderscore($reflectionClass);
+                $definition = $container->autowire($id, $className);
+
+                foreach ($reflectionClass->getMethods() as $method)
+                {
+                    if (!preg_match('/^on(.*)Event$/', $method->getName(), $matches))
+                    {
+                        continue;
+                    }
+
+                    $event = str_replace('.subscriber', '', ClassTools::getClassNameDotted($reflectionClass));
+                    $definition->addTag(
+                        'kernel.event_listener',
+                        [
+                            'event'  => $event . '.' . ClassTools::getCamelCaseDotted($matches[1]),
+                            'method' => $method->getName(),
+                        ]
+                    );
+                }
+            }
         }
     }
 }

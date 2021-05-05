@@ -1,8 +1,8 @@
 # Metatrader Automation
 
-This project born due to the need to run many instances of Metatrader to do an automatic backtesting with Tick Data
+This project born due to the need to run many instances of Metatrader 4 to do an automatic backtesting with Tick Data
 Suite enabled, and my first php script was totally destroying the PHP OOP concepts and best practices becoming a big
-monster, and aditionally is taken soo long time to do the backtesting because only use one instance of Metatrader (only
+monster, and aditionally is taken soo long time to do the backtesting because only use one instance of Metatrader 4 (only
 one test at a time)
 
 ## Current development
@@ -19,9 +19,10 @@ one test at a time)
 
 * PHP 7.4.6
 * Some PHP extensions enabled on PHP CLI (run composer install to know what)
-* An MT4 ExpertAdvisor implemented in `src/Metatrader/Automation/ExperAdvisor`
+* Metatrader 4
+* An Expert Advisor implemented in `src/Metatrader/Automation/ExpertAdvisor`
 
-### MT4 Implementation
+### Metatrader 4 Implementation
 
 #### Configuration (./config/*.yaml coming soon!)
 

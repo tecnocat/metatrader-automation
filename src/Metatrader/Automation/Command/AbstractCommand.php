@@ -6,13 +6,14 @@ namespace App\Metatrader\Automation\Command;
 
 use App\Metatrader\Automation\Event\AbstractEvent;
 use App\Metatrader\Automation\Helper\ClassTools;
+use App\Metatrader\Automation\Interfaces\DispatcherInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-abstract class AbstractCommand extends Command
+abstract class AbstractCommand extends Command implements DispatcherInterface
 {
     private EventDispatcherInterface $eventDispatcher;
     private SymfonyStyle             $io;
@@ -24,17 +25,17 @@ abstract class AbstractCommand extends Command
         parent::__construct();
     }
 
+    final public function dispatch(AbstractEvent $event): object
+    {
+        return $this->eventDispatcher->dispatch($event, $event->getEventName());
+    }
+
     /**
      * @param array|string $message
      */
     final protected function comment($message): void
     {
         $this->io->comment($message);
-    }
-
-    final protected function dispatch(AbstractEvent $event): object
-    {
-        return $this->eventDispatcher->dispatch($event, $event->getEventName());
     }
 
     final protected function error(string $message): void

@@ -8,7 +8,7 @@ use App\Metatrader\Automation\Annotation\Subscriber;
 use App\Metatrader\Automation\Domain\Backtest;
 use App\Metatrader\Automation\Event\FactoryBuildBacktestEvent;
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
-use App\Metatrader\Automation\ExpertAdvisor\ExpertAdvisorConfig;
+use App\Metatrader\Automation\ExpertAdvisor\ExpertAdvisorParameters;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 
 /**
@@ -38,9 +38,9 @@ class FactoryBuildSubscriber
 
     private function getExpertAdvisorInstance(string $name): AbstractExpertAdvisor
     {
-        $class  = AbstractExpertAdvisor::getExpertAdvisorClass($name);
-        $config = new ExpertAdvisorConfig($this->parameters->get('expert_advisors')[$name] ?? []);
+        $class      = AbstractExpertAdvisor::getExpertAdvisorClass($name);
+        $parameters = new ExpertAdvisorParameters($this->parameters->get('expert_advisors')[$name] ?? []);
 
-        return new $class($name, $config);
+        return new $class($name, $parameters);
     }
 }

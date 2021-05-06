@@ -4,23 +4,20 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\ExpertAdvisor;
 
-class AbstractExpertAdvisor implements ExpertAdvisorInterface
+abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
 {
-    private ExpertAdvisorConfig $config;
-    private string              $name;
+    protected const METATRADER_DATE_FORMAT = 'Y.m.d';
 
-    final public function __construct(string $name, ExpertAdvisorConfig $config)
+    private string                  $name;
+    private ExpertAdvisorParameters $parameters;
+
+    final public function __construct(string $name, ExpertAdvisorParameters $parameters)
     {
-        $this->name   = $name;
-        $this->config = $config;
+        $this->name       = $name;
+        $this->parameters = $parameters;
     }
 
-    final public function getConfig(): ExpertAdvisorConfig
-    {
-        return $this->config;
-    }
-
-    public static function getExpertAdvisorClass(string $expertAdvisorName): string
+    final public static function getExpertAdvisorClass(string $expertAdvisorName): string
     {
         return __NAMESPACE__ . '\\' . $expertAdvisorName;
     }
@@ -28,5 +25,15 @@ class AbstractExpertAdvisor implements ExpertAdvisorInterface
     final public function getName(): string
     {
         return $this->name;
+    }
+
+    final public function getParameters(): ExpertAdvisorParameters
+    {
+        return $this->parameters;
+    }
+
+    final public function isActive(): bool
+    {
+        return (bool) $this->parameters->getParameter('active');
     }
 }

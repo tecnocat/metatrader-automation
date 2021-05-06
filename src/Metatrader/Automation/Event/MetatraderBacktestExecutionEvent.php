@@ -11,10 +11,16 @@ class MetatraderBacktestExecutionEvent extends AbstractEvent
 {
     private BacktestInterface       $backtest;
     private BacktestReportInterface $backtestReport;
+    private array                   $errors;
 
     public function __construct(BacktestInterface $backtest)
     {
         $this->backtest = $backtest;
+    }
+
+    public function addError(string $error): void
+    {
+        $this->errors[] = $error;
     }
 
     public function getBacktest(): BacktestInterface
@@ -30,5 +36,15 @@ class MetatraderBacktestExecutionEvent extends AbstractEvent
     public function setBacktestReport(BacktestReportInterface $backtestReport): void
     {
         $this->backtestReport = $backtestReport;
+    }
+
+    public function getErrors(): array
+    {
+        return $this->errors;
+    }
+
+    public function hasErrors(): bool
+    {
+        return isset($this->errors) && 0 !== count($this->errors);
     }
 }

@@ -3,8 +3,6 @@ parameters:
   metatrader:
     data_path: C:\Users\Alpha\AppData\Roaming\MetaQuotes\Terminal
   expert_advisors:
-    common:
-      step_months: 12
     Bartolo:
       active: false
     Fermin:
@@ -23,6 +21,7 @@ parameters:
         max: 50
         min: 10
         step: 10
+      step_months: 12
     Wilson:
       active: false
 services:

@@ -124,7 +124,7 @@ class ClassTools
 
         if ($property->hasType())
         {
-            return (string) $property->getType();
+            return $property->getType()->getName();
         }
 
         return 'string';

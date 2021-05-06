@@ -71,6 +71,16 @@ class RunBacktestCommand extends AbstractCommand
         $event = new MetatraderBacktestExecutionEvent($event->getBacktest());
         $this->dispatch($event);
 
+        if ($event->hasErrors())
+        {
+            foreach ($event->getErrors() as $error)
+            {
+                $this->error($error);
+            }
+
+            return Command::FAILURE;
+        }
+
         return Command::SUCCESS;
     }
 }

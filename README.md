@@ -28,11 +28,9 @@ one test at a time)
 
 ### Metatrader 4 Implementation
 
-#### Configuration (./config/*.yaml coming soon!)
+See `config/services.yaml` to set up all the settings for your Expert Advisors and Metatrader 4 data directory
 
-#### Expert Advisor
-
-PHP implementation:
+### PHP Expert Advisor implementation
 
 ````php
 <?php
@@ -41,8 +39,21 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\ExpertAdvisor;
 
-class YourExpertAdvisorName extends AbstractExpertAdvisor implements ExpertAdvisorInterface
+use App\Metatrader\Automation\Domain\BacktestInterface;
+use App\Metatrader\Automation\Domain\BacktestIteration;
+
+class YourExpertAdvisorName extends AbstractExpertAdvisor
 {
+    public function getBacktestGenerator(BacktestInterface $backtest): \Generator
+    {
+        // Your iteration logic to generate a unique backtest report name (see Prudencio)
+        for ($i = 1; $i <= 10; $i++)
+        {
+            $reportName = "some-unique-name-for-report-based-on-some-parameters-$i.html";
+            
+            yield new BacktestIteration($reportName);
+        }
+    }
 }
 ````
 

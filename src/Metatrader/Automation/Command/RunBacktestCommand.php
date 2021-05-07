@@ -42,9 +42,9 @@ class RunBacktestCommand extends AbstractCommand
 
         if (!$event->isValid())
         {
-            foreach ($event->getErrors() as $error)
+            foreach ($event->getViolations() as $violation)
             {
-                $this->error($error->getMessage());
+                $this->error($violation->getMessage());
             }
 
             $this->exit('Validation failed.');

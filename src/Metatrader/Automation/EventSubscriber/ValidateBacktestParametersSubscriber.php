@@ -24,10 +24,10 @@ class ValidateBacktestParametersSubscriber
 
     public function onModelEvent(ValidateBacktestParametersModelEvent $event): void
     {
-        $model  = $this->getModel($event->getModelClass(), $event->getParameters());
-        $errors = $this->validator->validate($model);
+        $model      = $this->getModel($event->getModelClass(), $event->getParameters());
+        $violations = $this->validator->validate($model);
         $event->setModel($model);
-        $event->setErrors($errors);
+        $event->setViolations($violations);
     }
 
     private function getModel(string $model, array $parameters): AbstractModel

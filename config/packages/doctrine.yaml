@@ -1,0 +1,13 @@
+doctrine:
+  dbal:
+    override_url: true
+    url: '%env(resolve:DATABASE_URL)%'
+  orm:
+    auto_generate_proxy_classes: true
+    auto_mapping: false
+    mappings:
+      App\Metatrader\Automation\Entity:
+        dir: '%kernel.project_dir%/src/Metatrader/Automation/Entity'
+        prefix: App\Metatrader\Automation\Entity
+        type: annotation
+    naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware

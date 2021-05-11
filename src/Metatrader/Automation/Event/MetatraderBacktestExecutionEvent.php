@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Event;
 
-use App\Metatrader\Automation\Domain\BacktestInterface;
-use App\Metatrader\Automation\Domain\BacktestReportInterface;
+use App\Metatrader\Automation\Entity\BacktestEntity;
+use App\Metatrader\Automation\Entity\BacktestReportEntity;
 
 class MetatraderBacktestExecutionEvent extends AbstractEvent
 {
-    private BacktestInterface       $backtest;
-    private BacktestReportInterface $backtestReport;
+    private BacktestEntity       $backtestEntity;
+    private BacktestReportEntity $backtestReportEntity;
 
-    public function __construct(BacktestInterface $backtest)
+    public function __construct(BacktestEntity $backtestEntity)
     {
-        $this->backtest = $backtest;
+        $this->backtestEntity = $backtestEntity;
     }
 
-    public function getBacktest(): BacktestInterface
+    public function getBacktestEntity(): BacktestEntity
     {
-        return $this->backtest;
+        return $this->backtestEntity;
     }
 
-    public function getBacktestReport(): BacktestReportInterface
+    public function getBacktestReportEntity(): BacktestReportEntity
     {
-        return $this->backtestReport;
+        return $this->backtestReportEntity;
     }
 
-    public function setBacktestReport(BacktestReportInterface $backtestReport): void
+    public function setBacktestReportEntity(BacktestReportEntity $backtestReportEntity): void
     {
-        $this->backtestReport = $backtestReport;
+        $this->backtestReportEntity = $backtestReportEntity;
     }
 }

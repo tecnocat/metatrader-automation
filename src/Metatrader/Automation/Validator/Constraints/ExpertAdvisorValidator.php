@@ -16,6 +16,11 @@ class ExpertAdvisorValidator extends ConstraintValidator
      */
     public function validate($value, Constraint $constraint)
     {
+        if (empty($value))
+        {
+            return;
+        }
+
         if (!$constraint instanceof ExpertAdvisor)
         {
             throw new UnexpectedTypeException($constraint, ExpertAdvisor::class);

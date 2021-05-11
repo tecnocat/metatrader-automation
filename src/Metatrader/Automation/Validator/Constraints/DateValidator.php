@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Validator\Constraints;
 
 use App\Metatrader\Automation\Helper\ClassTools;
-use DateTime;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -19,6 +18,11 @@ class DateValidator extends ConstraintValidator
      */
     public function validate($value, Constraint $constraint)
     {
+        if (empty($value))
+        {
+            return;
+        }
+
         if (!$constraint instanceof Date)
         {
             throw new UnexpectedTypeException($constraint, Date::class);
@@ -49,8 +53,8 @@ class DateValidator extends ConstraintValidator
         $name    = $this->context->getPropertyName();
         $from    = ClassTools::getPropertyValue($object, $constraint->fromField);
         $to      = ClassTools::getPropertyValue($object, $constraint->toField);
-        $today   = new DateTime('today midnight');
-        $minimum = DateTime::createFromFormat($constraint->format, self::MINIMUM_DATE);
+        $today   = new \DateTime('today midnight');
+        $minimum = \DateTime::createFromFormat($constraint->format, self::MINIMUM_DATE);
 
         if ($constraint->fromField === $name)
         {

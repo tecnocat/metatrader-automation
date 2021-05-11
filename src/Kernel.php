@@ -87,19 +87,36 @@ class Kernel extends BaseKernel implements CompilerPassInterface
 
                 foreach ($reflectionClass->getMethods() as $method)
                 {
-                    if (!preg_match('/^on(.*)Event$/', $method->getName(), $matches))
+                    if ('Event' !== substr($method->getName(), -5))
                     {
                         continue;
                     }
 
-                    $event = str_replace('.subscriber', '', ClassTools::getClassNameDotted($reflectionClass));
-                    $definition->addTag(
-                        'kernel.event_listener',
-                        [
-                            'event'  => $event . '.' . ClassTools::getCamelCaseDotted($matches[1]),
-                            'method' => $method->getName(),
-                        ]
-                    );
+                    foreach ($method->getParameters() as $methodParameter)
+                    {
+                        if (!$methodParameter->hasType())
+                        {
+                            continue;
+                        }
+
+                        try
+                        {
+                            $eventType = new \ReflectionClass($methodParameter->getType()->getName());
+                            $eventName = ClassTools::getClassNameDotted($eventType);
+                        }
+                        catch (\Exception $e)
+                        {
+                            continue;
+                        }
+
+                        $definition->addTag(
+                            'kernel.event_listener',
+                            [
+                                'event'  => $eventName,
+                                'method' => $method->getName(),
+                            ]
+                        );
+                    }
                 }
             }
         }

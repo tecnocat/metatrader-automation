@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\EventSubscriber;
 
-use App\Metatrader\Automation\Event\AbstractEvent;
+use App\Metatrader\Automation\Event\EventInterface;
 use App\Metatrader\Automation\Interfaces\DispatcherInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -17,7 +17,7 @@ class AbstractEventSubscriber implements DispatcherInterface
         $this->eventDispatcher = $eventDispatcher;
     }
 
-    final public function dispatch(AbstractEvent $event): object
+    final public function dispatch(EventInterface $event): object
     {
         return $this->eventDispatcher->dispatch($event, $event->getEventName());
     }

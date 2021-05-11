@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Command;
 
-use App\Metatrader\Automation\Event\AbstractEvent;
+use App\Metatrader\Automation\Event\EventInterface;
 use App\Metatrader\Automation\Helper\ClassTools;
 use App\Metatrader\Automation\Interfaces\DispatcherInterface;
 use Symfony\Component\Console\Command\Command;
@@ -25,7 +25,7 @@ abstract class AbstractCommand extends Command implements DispatcherInterface
         parent::__construct();
     }
 
-    final public function dispatch(AbstractEvent $event): object
+    final public function dispatch(EventInterface $event): object
     {
         return $this->eventDispatcher->dispatch($event, $event->getEventName());
     }
@@ -48,20 +48,6 @@ abstract class AbstractCommand extends Command implements DispatcherInterface
         $this->io = new SymfonyStyle($input, $output);
 
         return $this->process($input);
-    }
-
-    final protected function exit(string $message, int $exitCode = Command::FAILURE): void
-    {
-        if (Command::FAILURE === $exitCode)
-        {
-            $this->io->error($message);
-        }
-        elseif (Command::SUCCESS === $exitCode)
-        {
-            $this->io->info($message);
-        }
-
-        exit($exitCode);
     }
 
     final protected function generateName(): string

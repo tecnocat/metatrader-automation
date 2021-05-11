@@ -6,7 +6,7 @@ namespace App\Metatrader\Automation\Event;
 
 use App\Metatrader\Automation\Helper\ClassTools;
 
-abstract class AbstractEvent implements EventInterface
+abstract class AbstractEvent implements EventInterface, EventErrorInterface
 {
     private array $errors;
 
@@ -22,7 +22,7 @@ abstract class AbstractEvent implements EventInterface
 
     final public function getEventName(): string
     {
-        return str_replace('.event', '', ClassTools::getClassNameDotted($this));
+        return ClassTools::getClassNameDotted($this);
     }
 
     final public function hasErrors(): bool

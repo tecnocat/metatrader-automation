@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Command;
 
-use App\Metatrader\Automation\Event\FactoryBuildBacktestEvent;
+use App\Metatrader\Automation\Event\Entity\FactoryBuildBacktestEntityEvent;
 use App\Metatrader\Automation\Event\MetatraderBacktestExecutionEvent;
-use App\Metatrader\Automation\Event\PrepareBacktestParametersCommandEvent;
-use App\Metatrader\Automation\Event\ValidateBacktestParametersModelEvent;
-use App\Metatrader\Automation\Model\BacktestModel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -34,42 +31,35 @@ class RunBacktestCommand extends AbstractCommand
 
     protected function process(InputInterface $input): int
     {
-        $event = new PrepareBacktestParametersCommandEvent($input);
-        $this->dispatch($event);
+        $parameters = array_merge($input->getArguments(), $input->getOptions());
+        $event      = $this->dispatch(new FactoryBuildBacktestEntityEvent($parameters));
 
-        $event = new ValidateBacktestParametersModelEvent(BacktestModel::class, $event->getParameters());
-        $this->dispatch($event);
-
-        if (!$event->isValid())
+        if ($event->hasErrors())
         {
-            foreach ($event->getViolations() as $violation)
+            foreach ($event->getErrors() as $error)
             {
-                $this->error($violation->getMessage());
+                $this->error($error);
             }
 
-            $this->exit('Validation failed.');
+            return Command::FAILURE;
         }
 
-        $model   = $event->getModel();
+        $entity  = $event->getBacktestEntity();
         $headers = ['Name', 'Symbol', 'Period', 'Deposit', 'From', 'To'];
         $rows    = [
             [
-                $model->getName(),
-                $model->getSymbol(),
-                $model->getPeriod(),
-                $model->getDeposit(),
-                $model->getFrom()->format('Y-m-d'),
-                $model->getTo()->format('Y-m-d'),
+                $entity->getName(),
+                $entity->getSymbol(),
+                $entity->getPeriod(),
+                $entity->getDeposit(),
+                $entity->getFrom()->format('Y-m-d'),
+                $entity->getTo()->format('Y-m-d'),
             ],
         ];
         $this->comment('Executing Metatrader Automation...');
         $this->table($headers, $rows);
 
-        $event = new FactoryBuildBacktestEvent($model);
-        $this->dispatch($event);
-
-        $event = new MetatraderBacktestExecutionEvent($event->getBacktest());
-        $this->dispatch($event);
+        $event = $this->dispatch(new MetatraderBacktestExecutionEvent($entity));
 
         if ($event->hasErrors())
         {

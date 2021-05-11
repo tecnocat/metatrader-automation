@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Metatrader\Automation\Annotation\Subscriber;
-use App\Metatrader\Automation\Helper\ClassTools;
+use App\Metatrader\Automation\Helper\ClassHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -82,7 +82,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
                     continue;
                 }
 
-                $id         = 'app.' . ClassTools::getClassNameUnderscore($reflectionClass);
+                $id         = 'app.' . ClassHelper::getClassNameUnderscore($reflectionClass);
                 $definition = $container->autowire($id, $className);
 
                 foreach ($reflectionClass->getMethods() as $method)
@@ -102,7 +102,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
                         try
                         {
                             $eventType = new \ReflectionClass($methodParameter->getType()->getName());
-                            $eventName = ClassTools::getClassNameDotted($eventType);
+                            $eventName = ClassHelper::getClassNameDotted($eventType);
                         }
                         catch (\Exception $e)
                         {

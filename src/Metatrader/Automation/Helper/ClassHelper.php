@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Helper;
 
-class ClassTools
+class ClassHelper
 {
     public static function getCamelCaseDashed(string $name): string
     {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Form\Type;
 
 use App\Metatrader\Automation\Entity\AbstractBaseEntity;
-use App\Metatrader\Automation\Helper\ClassTools;
+use App\Metatrader\Automation\Helper\ClassHelper;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -26,7 +26,7 @@ abstract class AbstractBaseType extends AbstractType
 
     private function getEntityClass(): string
     {
-        $entityName = mb_substr(ClassTools::getShortName($this), 0, -4) . 'Entity';
+        $entityName = mb_substr(ClassHelper::getShortName($this), 0, -4) . 'Entity';
 
         return AbstractBaseEntity::getNamespace() . '\\' . $entityName;
     }

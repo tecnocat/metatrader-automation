@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Command;
 
 use App\Metatrader\Automation\Event\EventInterface;
-use App\Metatrader\Automation\Helper\ClassTools;
+use App\Metatrader\Automation\Helper\ClassHelper;
 use App\Metatrader\Automation\Interfaces\DispatcherInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -52,7 +52,7 @@ abstract class AbstractCommand extends Command implements DispatcherInterface
 
     final protected function generateName(): string
     {
-        return mb_substr(ClassTools::getClassNameDashed($this), 0, -8);
+        return mb_substr(ClassHelper::getClassNameDashed($this), 0, -8);
     }
 
     final protected function table(array $headers, array $rows): void

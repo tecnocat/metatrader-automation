@@ -43,6 +43,11 @@ class ClassTools
         return $property->getValue($object);
     }
 
+    public static function getShortName(object $object): string
+    {
+        return self::getReflection($object)->getShortName();
+    }
+
     public static function hasProperty(object $object, string $name): bool
     {
         return self::getReflection($object)->hasProperty($name);

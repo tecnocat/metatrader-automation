@@ -4,30 +4,28 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Form\Type;
 
-use App\Metatrader\Automation\Entity\AbstractBaseEntity;
 use App\Metatrader\Automation\Helper\ClassHelper;
+use App\Metatrader\Automation\Helper\FormHelper;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class AbstractBaseType extends AbstractType
 {
+    final public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        parent::buildForm($builder, $options);
+
+        foreach (ClassHelper::getProperties($builder->getDataClass()) as $property)
+        {
+            FormHelper::addField($builder, $property->getName());
+        }
+    }
+
     final public function configureOptions(OptionsResolver $resolver): void
     {
         parent::configureOptions($resolver);
 
-        $resolver->setDefaults(
-            [
-                'allow_extra_fields' => true,
-                'csrf_protection'    => false,
-                'data_class'         => $this->getEntityClass(),
-            ]
-        );
-    }
-
-    private function getEntityClass(): string
-    {
-        $entityName = mb_substr(ClassHelper::getShortName($this), 0, -4) . 'Entity';
-
-        return AbstractBaseEntity::getNamespace() . '\\' . $entityName;
+        FormHelper::setDefaults($resolver, ClassHelper::getClassName($this));
     }
 }

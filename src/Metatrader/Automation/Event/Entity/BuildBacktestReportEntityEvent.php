@@ -6,7 +6,7 @@ namespace App\Metatrader\Automation\Event\Entity;
 
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
 
-class FactoryBuildBacktestReportEntityEvent extends AbstractBuildEntityEvent
+class BuildBacktestReportEntityEvent extends AbstractBuildEntityEvent
 {
     private BacktestReportEntity $backtestReportEntity;
 

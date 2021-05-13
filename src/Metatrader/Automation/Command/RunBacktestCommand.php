@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Command;
 
-use App\Metatrader\Automation\Event\Entity\FactoryBuildBacktestEntityEvent;
+use App\Metatrader\Automation\Event\Entity\BuildBacktestEntityEvent;
 use App\Metatrader\Automation\Event\MetatraderBacktestExecutionEvent;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -32,7 +32,7 @@ class RunBacktestCommand extends AbstractCommand
     protected function process(InputInterface $input): int
     {
         $parameters = array_merge($input->getArguments(), $input->getOptions());
-        $event      = $this->dispatch(new FactoryBuildBacktestEntityEvent($parameters));
+        $event      = $this->dispatch(new BuildBacktestEntityEvent($parameters));
 
         if ($event->hasErrors())
         {

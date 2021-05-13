@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=BacktestReportEntityRepository::class)
  */
-class BacktestReportEntity extends AbstractBaseEntity
+class BacktestReportEntity extends AbstractEntity
 {
     /**
      * @ORM\Column(type="float")
@@ -46,6 +46,11 @@ class BacktestReportEntity extends AbstractBaseEntity
      * @ORM\Column(type="float")
      */
     private float $expectedPayoff;
+
+    /**
+     * @ORM\Column(type="string")
+     */
+    private string $expertAdvisor;
 
     /**
      * @ORM\Column(type="float")
@@ -153,6 +158,11 @@ class BacktestReportEntity extends AbstractBaseEntity
     private float $modellingQuality;
 
     /**
+     * @ORM\Column(type="string")
+     */
+    private string $name;
+
+    /**
      * @ORM\Column(type="array")
      */
     private array $parameters;
@@ -181,11 +191,6 @@ class BacktestReportEntity extends AbstractBaseEntity
      * @ORM\Column(type="float")
      */
     private float $relativeDrawdown;
-
-    /**
-     * @ORM\Column(type="string")
-     */
-    private string $reportName;
 
     /**
      * @ORM\Column(type="integer")
@@ -292,6 +297,16 @@ class BacktestReportEntity extends AbstractBaseEntity
         $this->expectedPayoff = $expectedPayoff;
     }
 
+    public function getExpertAdvisor(): string
+    {
+        return $this->expertAdvisor;
+    }
+
+    public function setExpertAdvisor(string $expertAdvisor): void
+    {
+        $this->expertAdvisor = $expertAdvisor;
+    }
+
     public function getGrossLoss(): float
     {
         return $this->grossLoss;
@@ -310,11 +325,6 @@ class BacktestReportEntity extends AbstractBaseEntity
     public function setGrossProfit(float $grossProfit): void
     {
         $this->grossProfit = $grossProfit;
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     public function getInitialDeposit(): int
@@ -507,6 +517,16 @@ class BacktestReportEntity extends AbstractBaseEntity
         $this->modellingQuality = $modellingQuality;
     }
 
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
     public function getParameters(): array
     {
         return $this->parameters;
@@ -565,16 +585,6 @@ class BacktestReportEntity extends AbstractBaseEntity
     public function setRelativeDrawdown(float $relativeDrawdown): void
     {
         $this->relativeDrawdown = $relativeDrawdown;
-    }
-
-    public function getReportName(): string
-    {
-        return $this->reportName;
-    }
-
-    public function setReportName(string $reportName): void
-    {
-        $this->reportName = $reportName;
     }
 
     public function getShortPositions(): int
@@ -645,10 +655,5 @@ class BacktestReportEntity extends AbstractBaseEntity
     public function setTotalTrades(int $totalTrades): void
     {
         $this->totalTrades = $totalTrades;
-    }
-
-    public function setId(int $id): void
-    {
-        $this->id = $id;
     }
 }

@@ -6,7 +6,7 @@ namespace App\Metatrader\Automation\Event\Entity;
 
 use App\Metatrader\Automation\Event\AbstractEvent;
 
-abstract class AbstractBuildEntityEvent extends AbstractEvent implements EventBuildEntityInterface
+abstract class AbstractBuildEntityEvent extends AbstractEvent implements BuildEntityEventInterface
 {
     private array $parameters;
 

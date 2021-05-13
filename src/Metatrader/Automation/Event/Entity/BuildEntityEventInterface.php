@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Event\Entity;
 
-interface EventBuildEntityInterface
+interface BuildEntityEventInterface
 {
     public function getParameters(): array;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Metatrader\Automation\Annotation\Dependency;
 use App\Metatrader\Automation\Annotation\Subscriber;
 use App\Metatrader\Automation\Helper\ClassHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -11,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
@@ -20,7 +22,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
 
     public function process(ContainerBuilder $container): void
     {
-        $this->loadEventSubscribers($container);
+        $this->parseAnnotations($container);
     }
 
     protected function configureContainer(ContainerConfigurator $container): void
@@ -54,7 +56,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
         }
     }
 
-    private function loadEventSubscribers(ContainerBuilder $container): void
+    private function parseAnnotations(ContainerBuilder $container): void
     {
         $annotationReader = new AnnotationReader();
         $classMap         = require __DIR__ . '/../vendor/composer/autoload_classmap.php';
@@ -72,7 +74,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
             }
             catch (\ReflectionException $e)
             {
-                continue;
+                return;
             }
 
             foreach ($annotationReader->getClassAnnotations($reflectionClass) as $annotation)
@@ -82,12 +84,9 @@ class Kernel extends BaseKernel implements CompilerPassInterface
                     continue;
                 }
 
-                $id         = 'app.' . ClassHelper::getClassNameUnderscore($reflectionClass);
-                $definition = $container->autowire($id, $className);
-
                 foreach ($reflectionClass->getMethods() as $method)
                 {
-                    if ('Event' !== substr($method->getName(), -5))
+                    if ('Event' !== mb_substr($method->getName(), -5))
                     {
                         continue;
                     }
@@ -99,16 +98,9 @@ class Kernel extends BaseKernel implements CompilerPassInterface
                             continue;
                         }
 
-                        try
-                        {
-                            $eventType = new \ReflectionClass($methodParameter->getType()->getName());
-                            $eventName = str_replace('.event', '', ClassHelper::getClassNameDotted($eventType));
-                        }
-                        catch (\Exception $e)
-                        {
-                            continue;
-                        }
-
+                        $eventType  = ClassHelper::getClassNameDotted($methodParameter->getType()->getName());
+                        $eventName  = str_replace('.event', '', $eventType);
+                        $definition = $container->getDefinition($className);
                         $definition->addTag(
                             'kernel.event_listener',
                             [
@@ -117,6 +109,39 @@ class Kernel extends BaseKernel implements CompilerPassInterface
                             ]
                         );
                     }
+                }
+            }
+
+            foreach ($reflectionClass->getProperties() as $property)
+            {
+                foreach ($annotationReader->getPropertyAnnotations($property) as $annotation)
+                {
+                    if (!$annotation instanceof Dependency)
+                    {
+                        continue;
+                    }
+
+                    $definition = $container->getDefinition($className);
+                    $dependency = $property->getType()->getName();
+                    $reference  = new Reference($dependency);
+
+                    if ($property->isPublic())
+                    {
+                        $definition->setProperty($property->getName(), $reference);
+
+                        continue;
+                    }
+
+                    $methodCall = 'set' . ClassHelper::getClassName($dependency);
+
+                    if ($reflectionClass->hasMethod($methodCall))
+                    {
+                        $definition->addMethodCall($methodCall, [$reference]);
+
+                        continue;
+                    }
+
+                    throw new \RuntimeException(sprintf('Property "%s" is private or the method "%s" does not exist in class "%s"', $property->getName(), $methodCall, $className));
                 }
             }
         }

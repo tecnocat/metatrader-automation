@@ -6,34 +6,86 @@ namespace App\Metatrader\Automation\Helper;
 
 class ClassHelper
 {
-    public static function getCamelCaseDashed(string $name): string
+    public static function copyFields(object $source, object $target): void
     {
-        return self::getCamelCaseGlue($name, '-');
+        foreach (self::getProperties($source) as $property)
+        {
+            $field = $property->getName();
+
+            if (!self::hasProperty($target, $field))
+            {
+                continue;
+            }
+
+            $value = self::getPropertyValue($source, $field);
+
+            if (null === $value)
+            {
+                continue;
+            }
+
+            self::setPropertyValue($target, $field, $value);
+        }
     }
 
-    public static function getCamelCaseDotted(string $name): string
+    /**
+     * @param object|string $class
+     */
+    public static function getClassName($class): string
     {
-        return self::getCamelCaseGlue($name, '.');
+        return self::getReflection($class)->getShortName();
     }
 
-    public static function getCamelCaseUnderscore(string $name): string
+    /**
+     * @param object|string $class
+     */
+    public static function getClassNameCamelCase($class): string
     {
-        return self::getCamelCaseGlue($name, '_');
+        return self::toCamelCase(self::getClassName($class));
     }
 
-    public static function getClassNameDashed(object $object): string
+    /**
+     * @param object|string $class
+     */
+    public static function getClassNameDashed($class): string
     {
-        return self::getClassNameGlue($object, '-');
+        return self::getClassNameGlue($class, '-');
     }
 
-    public static function getClassNameDotted(object $object): string
+    /**
+     * @param object|string $class
+     */
+    public static function getClassNameDotted($class): string
     {
-        return self::getClassNameGlue($object, '.');
+        return self::getClassNameGlue($class, '.');
     }
 
-    public static function getClassNameUnderscore(object $object): string
+    /**
+     * @param object|string $class
+     */
+    public static function getClassNameUnderscore($class): string
     {
-        return self::getClassNameGlue($object, '_');
+        return self::getClassNameGlue($class, '_');
+    }
+
+    /**
+     * @param object|string $class
+     */
+    public static function getProperties($class): array
+    {
+        return self::getReflection($class)->getProperties();
+    }
+
+    public static function getPropertyType($class, string $name): string
+    {
+        $property = self::getProperty($class, $name);
+
+        if ($property->hasType())
+        {
+            return $property->getType()->getName();
+        }
+
+        return 'string';
     }
 
     public static function getPropertyValue(object $object, string $name)
@@ -43,14 +95,24 @@ class ClassHelper
         return $property->getValue($object);
     }
 
-    public static function getShortName(object $object): string
+    public static function getPropertyValues(object $object): array
     {
-        return self::getReflection($object)->getShortName();
+        $result = [];
+
+        foreach (self::getProperties($object) as $property)
+        {
+            $result[$property->getName()] = self::getPropertyValue($object, $property->getName());
+        }
+
+        return $result;
     }
 
-    public static function hasProperty(object $object, string $name): bool
+    /**
+     * @param object|string $class
+     */
+    public static function hasProperty($class, string $name): bool
     {
-        return self::getReflection($object)->hasProperty($name);
+        return self::getReflection($class)->hasProperty($name);
     }
 
     /**
@@ -62,27 +124,48 @@ class ClassHelper
         $property->setValue($object, self::castToType($object, $name, $value));
     }
 
+    public static function setPropertyValues(object $object, array $parameters): void
+    {
+        foreach ($parameters as $field => $value)
+        {
+            if (self::hasProperty($object, $field))
+            {
+                self::setPropertyValue($object, $field, $value);
+            }
+        }
+    }
+
+    public static function toCamelCase(string $name): string
+    {
+        return str_replace(' ', '', ucwords(str_replace(['_', '-', '.'], ' ', $name)));
+    }
+
+    public static function toDashed(string $name): string
+    {
+        return self::formulae(self::toCamelCase($name), '-');
+    }
+
+    public static function toDot(string $name): string
+    {
+        return self::formulae(self::toCamelCase($name), '.');
+    }
+
+    public static function toUnderscore(string $name): string
+    {
+        return self::formulae(self::toCamelCase($name), '_');
+    }
+
     /**
      * @param bool|\DateTime|float|int|mixed|string $value
      *
      * @return bool|\DateTime|float|int|mixed|string
      */
-    private static function castToType(object $object, string $name, $value)
+    private static function castToType($class, string $name, $value)
     {
-        switch (self::getPropertyType($object, $name))
+        switch (self::getPropertyType($class, $name))
         {
             case 'bool':
                 return (bool) $value;
-
-            case 'DateTime':
-                try
-                {
-                    return new \DateTime($value);
-                }
-                catch (\Exception $e)
-                {
-                    return $value;
-                }
 
             case 'float':
                 return (float) $value;
@@ -98,45 +181,45 @@ class ClassHelper
         }
     }
 
-    private static function getAccessibleProperty(object $object, string $name): \ReflectionProperty
+    private static function formulae(string $name, string $glue): string
     {
-        $property = self::getProperty($object, $name);
+        return ltrim(mb_strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', $glue . '$0', $name)), $glue);
+    }
+
+    /**
+     * @param object|string $class
+     */
+    private static function getAccessibleProperty($class, string $name): \ReflectionProperty
+    {
+        $property = self::getProperty($class, $name);
         $property->setAccessible(true);
 
         return $property;
     }
 
-    private static function getCamelCaseGlue(string $name, string $glue): string
+    /**
+     * @param object|string $class
+     */
+    private static function getClassNameGlue($class, string $glue): string
     {
-        return ltrim(mb_strtolower(preg_replace('/[A-Z]([A-Z](?![a-z]))*/', $glue . '$0', $name)), $glue);
+        $reflection = self::getReflection($class);
+
+        return self::formulae($reflection->getShortName(), $glue);
     }
 
-    private static function getClassNameGlue(object $object, string $glue): string
+    /**
+     * @param object|string $class
+     */
+    private static function getProperty($class, string $name): \ReflectionProperty
     {
-        $reflection = self::getReflection($object);
-
-        return self::getCamelCaseGlue($reflection->getShortName(), $glue);
+        return self::getReflection($class)->getProperty($name);
     }
 
-    private static function getProperty(object $object, string $name): \ReflectionProperty
+    /**
+     * @param object|string $class
+     */
+    private static function getReflection($class): \ReflectionClass
     {
-        return self::getReflection($object)->getProperty($name);
-    }
-
-    private static function getPropertyType(object $object, string $name): string
-    {
-        $property = self::getProperty($object, $name);
-
-        if ($property->hasType())
-        {
-            return $property->getType()->getName();
-        }
-
-        return 'string';
-    }
-
-    private static function getReflection(object $object): \ReflectionClass
-    {
-        return $object instanceof \ReflectionClass ? $object : new \ReflectionClass($object);
+        return new \ReflectionClass($class);
     }
 }

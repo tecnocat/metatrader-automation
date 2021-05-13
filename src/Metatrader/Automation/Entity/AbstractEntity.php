@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Entity;
 
+use App\Metatrader\Automation\Interfaces\EntityInterface;
 use Doctrine\ORM\Mapping as ORM;
 
-abstract class AbstractBaseEntity
+abstract class AbstractEntity implements EntityInterface
 {
     /**
      * @ORM\Id
@@ -14,6 +15,11 @@ abstract class AbstractBaseEntity
      * @ORM\Column(type="integer")
      */
     protected int $id;
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
 
     public static function getNamespace(): string
     {

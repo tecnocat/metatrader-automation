@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Event;
 
 use App\Metatrader\Automation\Helper\ClassHelper;
+use App\Metatrader\Automation\Interfaces\ErrorInterface;
+use App\Metatrader\Automation\Interfaces\EventInterface;
 
-abstract class AbstractEvent implements EventInterface, EventErrorInterface
+abstract class AbstractEvent implements EventInterface, ErrorInterface
 {
     private array $errors;
 
@@ -20,13 +22,13 @@ abstract class AbstractEvent implements EventInterface, EventErrorInterface
         return $this->errors;
     }
 
-    final public function getEventName(): string
-    {
-        return str_replace('.event', '', ClassHelper::getClassNameDotted($this));
-    }
-
     final public function hasErrors(): bool
     {
         return isset($this->errors) && 0 !== count($this->errors);
+    }
+
+    final public function getEventName(): string
+    {
+        return str_replace('.event', '', ClassHelper::getClassNameDotted($this));
     }
 }

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Metatrader\Automation\Event;
+namespace App\Metatrader\Automation\Interfaces;
 
-interface EventErrorInterface
+interface ErrorInterface
 {
     public function addError(string $error): void;
 

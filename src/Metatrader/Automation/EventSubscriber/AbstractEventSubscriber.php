@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\EventSubscriber;
 
-use App\Metatrader\Automation\Event\EventInterface;
 use App\Metatrader\Automation\Interfaces\DispatcherInterface;
+use App\Metatrader\Automation\Interfaces\EventInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class AbstractEventSubscriber implements DispatcherInterface

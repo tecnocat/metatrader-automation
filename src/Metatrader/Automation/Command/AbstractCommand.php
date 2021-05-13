@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Command;
 
-use App\Metatrader\Automation\Event\EventInterface;
 use App\Metatrader\Automation\Helper\ClassHelper;
 use App\Metatrader\Automation\Interfaces\DispatcherInterface;
+use App\Metatrader\Automation\Interfaces\EventInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

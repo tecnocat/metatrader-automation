@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\ExpertAdvisor;
 
-use App\Metatrader\Automation\Domain\BacktestInterface;
-use App\Metatrader\Automation\Domain\BacktestIteration;
+use App\Metatrader\Automation\Interfaces\EntityInterface;
 
 class Prudencio extends AbstractExpertAdvisor
 {
-    public function getBacktestGenerator(BacktestInterface $backtest): \Generator
+    public function getBacktestGenerator(EntityInterface $backtestEntity): \Generator
     {
-        $fromDate     = clone $backtest->getFrom();
-        $toDate       = $backtest->getTo();
-        $period       = $backtest->getPeriod();
-        $stepMonths   = $this->getParameters()->getParameter('step_months');
-        $distanceData = $this->getParameters()->getParameter('distance');
-        $hedgingData  = $this->getParameters()->getParameter('hedging');
-        $profitData   = $this->getParameters()->getParameter('profit');
+        $fromDate     = clone $backtestEntity->getFrom();
+        $toDate       = $backtestEntity->getTo();
+        $period       = $backtestEntity->getPeriod();
+        $stepMonths   = $this->getParameters()->getInt('step_months');
+        $distanceData = $this->getParameters()->get('distance');
+        $hedgingData  = $this->getParameters()->get('hedging');
+        $profitData   = $this->getParameters()->get('profit');
         $increment    = 0;
 
         while ($fromDate < $toDate)
@@ -46,9 +45,7 @@ class Prudencio extends AbstractExpertAdvisor
 
                     while ($distance <= $distanceData['max'])
                     {
-                        $reportName = "$period-$from-$to-d$distance-h$hedging-l$loss-p$profit-i$increment.html";
-
-                        yield new BacktestIteration($reportName);
+                        yield "$period-$from-$to-d$distance-h$hedging-l$loss-p$profit-i$increment.html";
 
                         $distance = $distance + $distanceData['step'];
                     }

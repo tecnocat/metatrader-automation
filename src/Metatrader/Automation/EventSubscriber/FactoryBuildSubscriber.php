@@ -48,9 +48,9 @@ class FactoryBuildSubscriber
 
         if (!$form->isValid())
         {
-            foreach ($form->getErrors() as $formError)
+            foreach ($form->getErrors(true) as $formError)
             {
-                $event->addError($formError->getMessage());
+                $event->addError(sprintf('%s (%s): %s', $formError->getOrigin()->getName(), $formError->getOrigin()->getViewData(), $formError->getMessage()));
             }
 
             return;

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Helper;
 
 use App\Metatrader\Automation\Entity\AbstractEntity;
+use App\Metatrader\Automation\Form\Type\AbstractBaseType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -19,6 +21,12 @@ class FormHelper
     {
         $type = ClassHelper::getPropertyType($builder->getDataClass(), $name);
         $builder->add($name, self::getFormType($type), self::getOptionsType($type));
+        self::addModelTransformer($builder, $name, $type);
+    }
+
+    public static function getFormEntityType(string $class): string
+    {
+        return AbstractBaseType::getNamespace() . '\\' . mb_substr(ClassHelper::getClassName($class), 0, -6) . 'Type';
     }
 
     public static function setDefaults(OptionsResolver $resolver, string $className): void
@@ -30,6 +38,32 @@ class FormHelper
                 'data_class'         => self::getEntityClass($className),
             ]
         );
+    }
+
+    private static function addModelTransformer(FormBuilderInterface $builder, string $name, string $type): void
+    {
+        switch ($type)
+        {
+            case 'array':
+                $builder->get($name)->addModelTransformer(
+                    new CallbackTransformer(
+                        function ($value)
+                        {
+                            return !empty($value) ? serialize($value) : null;
+                        },
+                        function ($value)
+                        {
+                            return !empty($value) ? unserialize($value) : null;
+                        }
+                    )
+                )
+                ;
+
+                break;
+
+            default:
+                break;
+        }
     }
 
     private static function getEntityClass(string $className): string

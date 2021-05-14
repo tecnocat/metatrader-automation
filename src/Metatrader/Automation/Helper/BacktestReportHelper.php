@@ -158,7 +158,7 @@ class BacktestReportHelper
             }
         }
 
-        $parameters['parameters'] = $inputs;
+        $parameters['parameters'] = serialize($inputs);
 
         return $parameters;
     }

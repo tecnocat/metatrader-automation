@@ -10,7 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 
-class RunBacktestCommand extends AbstractCommand
+class MetatraderBacktestGenerateCommand extends AbstractCommand
 {
     protected function configure()
     {
@@ -23,7 +23,7 @@ class RunBacktestCommand extends AbstractCommand
             ->addArgument('deposit', InputArgument::REQUIRED, 'The amount of equity to test with the Expert Advisor')
             ->addArgument('from', InputArgument::REQUIRED, 'The from date to test with the Expert Advisor')
             ->addArgument('to', InputArgument::REQUIRED, 'The to date to test with the Expert Advisor')
-            ->setDescription('Run a Metatrader backtest')
+            ->setDescription('Generate a Metatrader backtest reports based on selected parameters')
             ->setHelp('This command allow you to run multiple Metatrader instances and backtests automatically')
             ->setName($this->generateName())
         ;

@@ -47,6 +47,14 @@ class ClassHelper
     /**
      * @param object|string $class
      */
+    public static function getClassNameColons($class): string
+    {
+        return self::getClassNameGlue($class, ':');
+    }
+
+    /**
+     * @param object|string $class
+     */
     public static function getClassNameDashed($class): string
     {
         return self::getClassNameGlue($class, '-');
@@ -137,7 +145,12 @@ class ClassHelper
 
     public static function toCamelCase(string $name): string
     {
-        return str_replace(' ', '', ucwords(str_replace(['_', '-', '.'], ' ', $name)));
+        return str_replace(' ', '', ucwords(str_replace(['_', '-', '.', ':'], ' ', $name)));
+    }
+
+    public static function toColon(string $name): string
+    {
+        return self::formulae(self::toCamelCase($name), ':');
     }
 
     public static function toDashed(string $name): string
@@ -202,9 +215,7 @@ class ClassHelper
      */
     private static function getClassNameGlue($class, string $glue): string
     {
-        $reflection = self::getReflection($class);
-
-        return self::formulae($reflection->getShortName(), $glue);
+        return self::formulae(self::getClassName($class), $glue);
     }
 
     /**

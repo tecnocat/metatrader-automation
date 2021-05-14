@@ -52,7 +52,7 @@ abstract class AbstractCommand extends Command implements DispatcherInterface
 
     final protected function generateName(): string
     {
-        return mb_substr(ClassHelper::getClassNameDashed($this), 0, -8);
+        return mb_substr(ClassHelper::getClassNameColons($this), 0, -8);
     }
 
     final protected function table(array $headers, array $rows): void

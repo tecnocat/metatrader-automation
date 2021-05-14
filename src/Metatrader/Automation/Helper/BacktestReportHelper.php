@@ -12,7 +12,9 @@ class BacktestReportHelper
 
     public static function parseFile(string $file): array
     {
-        $parameters = [];
+        $parameters = [
+            'name' => basename($file),
+        ];
 
         foreach (self::readFile($file) as $number => $line)
         {
@@ -22,7 +24,7 @@ class BacktestReportHelper
             }
         }
 
-        return $parameters;
+        return self::transforms($parameters);
     }
 
     private static function commonParser(string $line, string $regex): array
@@ -131,5 +133,33 @@ class BacktestReportHelper
     private static function toAttribute(string $attribute): string
     {
         return lcfirst(str_replace(' ', '', ucwords($attribute)));
+    }
+
+    private static function transforms(array $parameters): array
+    {
+        $parameters                   = array_map('trim', $parameters);
+        $parameters['from']           = str_replace('.', '-', $parameters['from']);
+        $parameters['to']             = str_replace('.', '-', $parameters['to']);
+        $parameters['initialDeposit'] = str_replace('.00', '', $parameters['initialDeposit']);
+
+        if ('Variable' == $parameters['spread'])
+        {
+            $parameters['spread'] = -1;
+        }
+
+        $inputs = [];
+
+        foreach ($parameters as $parameterName => $parameterValue)
+        {
+            if ('input' == substr($parameterName, 0, 5))
+            {
+                unset($parameters[$parameterName]);
+                $inputs[substr($parameterName, 5)] = $parameterValue;
+            }
+        }
+
+        $parameters['parameters'] = $inputs;
+
+        return $parameters;
     }
 }

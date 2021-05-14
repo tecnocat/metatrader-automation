@@ -65,7 +65,7 @@ class BacktestReportEntity extends AbstractEntity
 
     /**
      * @Assert\NotBlank
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", name="`from`")
      * @Validators\Date("Y-m-d")
      */
     private \DateTime $from;
@@ -223,7 +223,7 @@ class BacktestReportEntity extends AbstractEntity
 
     /**
      * @Assert\NotBlank
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", name="`to`")
      * @Validators\Date("Y-m-d")
      */
     private \DateTime $to;

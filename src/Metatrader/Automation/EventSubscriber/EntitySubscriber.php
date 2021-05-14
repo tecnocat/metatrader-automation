@@ -63,6 +63,6 @@ class EntitySubscriber extends AbstractEventSubscriber
     {
         $this->entityManager->persist($event->getEntity());
         $this->entityManager->flush();
-        $this->entityManager->clear($event->getEntity());
+        $this->entityManager->clear();
     }
 }

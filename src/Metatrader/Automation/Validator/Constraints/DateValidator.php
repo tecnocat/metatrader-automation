@@ -54,7 +54,7 @@ class DateValidator extends ConstraintValidator
         $from    = ClassHelper::getPropertyValue($object, $constraint->fromField);
         $to      = ClassHelper::getPropertyValue($object, $constraint->toField);
         $today   = new \DateTime('today midnight');
-        $minimum = \DateTime::createFromFormat($constraint->format, self::MINIMUM_DATE);
+        $minimum = \DateTime::createFromFormat($constraint->format, self::MINIMUM_DATE)->modify('midnight');
 
         if ($constraint->fromField === $name)
         {

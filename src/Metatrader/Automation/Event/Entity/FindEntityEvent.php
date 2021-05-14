@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Metatrader\Automation\Event;
+namespace App\Metatrader\Automation\Event\Entity;
 
+use App\Metatrader\Automation\Event\AbstractEvent;
 use App\Metatrader\Automation\Interfaces\EntityInterface;
 
 class FindEntityEvent extends AbstractEvent
 {
-    private string              $class;
+    private string          $class;
     private array           $criteria;
     private EntityInterface $entity;
 
@@ -16,6 +17,11 @@ class FindEntityEvent extends AbstractEvent
     {
         $this->class    = $class;
         $this->criteria = $criteria;
+    }
+
+    public function isFound(): bool
+    {
+        return isset($this->entity);
     }
 
     public function getClass(): string
@@ -31,11 +37,6 @@ class FindEntityEvent extends AbstractEvent
     public function getEntity(): EntityInterface
     {
         return $this->entity;
-    }
-
-    public function existsEntity(): bool
-    {
-        return isset($this->entity);
     }
 
     public function setEntity(EntityInterface $entity): void

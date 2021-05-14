@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Entity;
 
 use App\Metatrader\Automation\Interfaces\EntityInterface;
+use App\Metatrader\Automation\Interfaces\NamespaceInterface;
 use Doctrine\ORM\Mapping as ORM;
 
-abstract class AbstractEntity implements EntityInterface
+abstract class AbstractEntity implements EntityInterface, NamespaceInterface
 {
     /**
      * @ORM\Id

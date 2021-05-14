@@ -7,7 +7,7 @@ namespace App\Metatrader\Automation\Event;
 use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
 
-class MetatraderBacktestExecutionEvent extends AbstractEvent
+class MetatraderExecutionEvent extends AbstractEvent
 {
     private BacktestEntity       $backtestEntity;
     private BacktestReportEntity $backtestReportEntity;

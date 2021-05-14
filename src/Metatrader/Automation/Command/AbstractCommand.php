@@ -49,7 +49,7 @@ abstract class AbstractCommand extends Command implements DispatcherInterface
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        return $this->process($input);
+        return $this->process($input, $output);
     }
 
     final protected function generateName(): string

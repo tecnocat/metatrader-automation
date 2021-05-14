@@ -2,33 +2,31 @@
 
 This project born due to the need to run many instances of Metatrader 4 to do an automatic backtesting with Tick Data
 Suite enabled, and my first php script was totally destroying the PHP OOP concepts and best practices becoming a big
-monster, and aditionally is taken soo long time to do the backtesting because only use one instance of Metatrader 4 (only
-one test at a time)
+monster, and additionally is taken soo long time to do the backtesting because only use one instance of Metatrader 4
 
-## Current development
+## Installation
 
-* ~~Prepare command basics with components and workflow events~~
-* ~~System to load Expert Advisor settings based on .yaml files~~
-* ~~Backtest report parser (to future store in database with Doctrine)~~
-* ~~Expert Advisor iterator for each available backtest settings~~
-* ~~Form builder and helper to handle dynamic forms based on entities~~
-* ~~Command to import already executed Metatrader backtest reports~~
-* Find on data folder for installed Metatrader 4 instances and launch 
-* Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
+````bash
+git clone https://github.com/tecnocat/metatrader-automation.git
+cd metatrader-automation
+composer install
+````
 
-## Next steps
+### How to run
 
-* Cluster generator (copy many instances of main Metatrader 4)
-* Workflow steps to detect Metatrader 4 instances free to run
-* System to handle start / stop of Tick Data Suite during backtest
-* Multiple Expert Advisors and symbols to backtesting at same time
-* Analyze database to allow relaunch the already executed tests
-* May be store backtest report image in the database o folder
+#### Backtest generate reports command (not yet completed)
 
-## Known bugs
+````bash
+php bin/console metatrader:backtest:generate --help
+````
 
-* The import command take too much time between backtest reports
-* Date validator is failing when one of the date fields is empty
+#### Backtest import reports command
+
+````bash
+php bin/console metatrader:backtest:import --help
+````
+
+## Implementation
 
 ### Requirements
 
@@ -40,6 +38,20 @@ one test at a time)
 ### Metatrader 4 Implementation
 
 See `config/services.yaml` to set up all the settings for your Expert Advisors and Metatrader 4 data directory
+
+````yaml
+---
+parameters:
+  metatrader:
+    data_path: C:\Path\To\Data\Directory # Usually C:\Users\<YourUsername>\AppData\Roaming\MetaQuotes\Terminal
+  expert_advisors:
+    YourExpertAdvisorName:
+      active: true # Required
+      limit: 10
+    AnotherExpertAdvisorName:
+      active: false # Required
+      foo: bar
+````
 
 ### PHP Expert Advisor implementation
 
@@ -56,8 +68,11 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 {
     public function getBacktestGenerator(EntityInterface $backtestEntity): \Generator
     {
-        // Your iteration logic to generate a unique backtest report name (see Prudencio)
-        for ($i = 1; $i <= 10; $i++)
+        // You can fetch Expert Advisor parameters calling $this->getParameters() 
+        $limit = $this->getParameters()->get('limit');
+
+        // Your iteration logic to generate a unique backtest report name
+        for ($i = 1; $i <= $limit; $i++)
         {
             yield "some-unique-name-for-report-based-on-some-parameters-$i.html";
         }
@@ -65,24 +80,32 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 }
 ````
 
-### How to install
+### Development information
 
-````bash
-git clone https://github.com/tecnocat/metatrader-automation.git
-cd metatrader-automation
-composer install
-````
+#### Currently development
 
-### How to run
+* Find on data folder for installed Metatrader 4 instances and launch
+* Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
 
-#### Backtest generate reports command
+#### Next steps
 
-````bash
-php .\bin\console metatrader:backtest:generate --help
-````
+* Cluster generator (copy many instances of main Metatrader 4)
+* Workflow steps to detect Metatrader 4 instances free to run
+* System to handle start / stop of Tick Data Suite during backtest
+* Multiple Expert Advisors and symbols to backtesting at same time
+* Analyze database to allow relaunch the already executed tests
+* May be store backtest report image in the database o folder
 
-#### Backtest import reports command
+#### Known bugs
 
-````bash
-php .\bin\console metatrader:backtest:import --help
-````
+* The import command take too much time between backtest reports
+* Date validator is failing when one of the date fields is empty
+
+#### Already done
+
+* Prepare command basics with components and workflow events
+* System to load Expert Advisor settings based on .yaml files
+* Backtest report parser (to future store in database with Doctrine)
+* Expert Advisor iterator for each available backtest settings
+* Form builder and helper to handle dynamic forms based on entities
+* Command to import already executed Metatrader backtest reports

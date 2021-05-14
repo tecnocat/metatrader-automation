@@ -10,8 +10,10 @@ use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\Entity\SaveEntityEvent;
 use App\Metatrader\Automation\Helper\BacktestReportHelper;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 
 class MetatraderBacktestImportCommand extends AbstractCommand
@@ -28,7 +30,7 @@ class MetatraderBacktestImportCommand extends AbstractCommand
         ;
     }
 
-    protected function process(InputInterface $input): int
+    protected function process(InputInterface $input, OutputInterface $output): int
     {
         try
         {
@@ -49,18 +51,19 @@ class MetatraderBacktestImportCommand extends AbstractCommand
             return Command::FAILURE;
         }
 
+        $progressBar = $this->getProgressBar($output, $finder->count());
+
         foreach ($finder as $file)
         {
-            $name = $file->getFilename();
-            $this->comment("Parsing backtest report $name ...");
-
+            $name            = $file->getFilename();
             $criteria        = ['name' => $name];
             $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
             $this->dispatch($findEntityEvent);
 
             if ($findEntityEvent->isFound())
             {
-                $this->comment("Backtest report $name already imported, skipping ...");
+                $progressBar->setMessage("<fg=cyan>$name</> <fg=yellow>already imported, skip...</>");
+                $progressBar->advance();
 
                 continue;
             }
@@ -81,9 +84,27 @@ class MetatraderBacktestImportCommand extends AbstractCommand
                 return Command::FAILURE;
             }
 
-            $this->comment("Backtest report $name imported successfully!");
+            $progressBar->setMessage("<fg=cyan>$name</> <fg=green>imported successfully!</>");
+            $progressBar->advance();
         }
 
+        $progressBar->finish();
+
         return Command::SUCCESS;
+    }
+
+    private function getProgressBar(OutputInterface $output, int $total): ProgressBar
+    {
+        $spacer = str_repeat(' ', mb_strlen((string) $total) * 2 + 2);
+        $format = "\n$spacer %message%\n\n <fg=yellow>%current%</>/<fg=green>%max%</> [%bar%] %percent:3s%%\n";
+        ProgressBar::setFormatDefinition('custom', $format);
+        $progressBar = new ProgressBar($output, $total);
+        $progressBar->setBarWidth(80);
+        $progressBar->setFormat('custom');
+        $progressBar->setBarCharacter('<fg=green>|</>');
+        $progressBar->setProgressCharacter('<fg=yellow>></>');
+        $progressBar->setEmptyBarCharacter('<fg=red>-</>');
+
+        return $progressBar;
     }
 }

@@ -8,7 +8,7 @@ use App\Metatrader\Automation\Annotation\Dependency;
 use App\Metatrader\Automation\Annotation\Subscriber;
 use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
-use App\Metatrader\Automation\Event\MetatraderBacktestExecutionEvent;
+use App\Metatrader\Automation\Event\MetatraderExecutionEvent;
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -16,14 +16,14 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 /**
  * @Subscriber
  */
-class MetatraderBacktestSubscriber extends AbstractEventSubscriber
+class MetatraderSubscriber extends AbstractEventSubscriber
 {
     /**
      * @Dependency
      */
     public ContainerBagInterface $containerBag;
 
-    public function onExecutionEvent(MetatraderBacktestExecutionEvent $executionEvent): void
+    public function onExecutionEvent(MetatraderExecutionEvent $executionEvent): void
     {
         $backtestEntity = $executionEvent->getBacktestEntity();
         $expertAdvisor  = $this->getExpertAdvisorInstance($backtestEntity->getName());

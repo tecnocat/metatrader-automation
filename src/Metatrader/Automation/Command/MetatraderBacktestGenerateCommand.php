@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Command;
 
-use App\Metatrader\Automation\Event\Entity\BuildBacktestEntityEvent;
-use App\Metatrader\Automation\Event\MetatraderBacktestExecutionEvent;
+use App\Metatrader\Automation\Entity\BacktestEntity;
+use App\Metatrader\Automation\Event\Entity\BuildEntityEvent;
+use App\Metatrader\Automation\Event\MetatraderExecutionEvent;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class MetatraderBacktestGenerateCommand extends AbstractCommand
 {
@@ -29,22 +31,19 @@ class MetatraderBacktestGenerateCommand extends AbstractCommand
         ;
     }
 
-    protected function process(InputInterface $input): int
+    protected function process(InputInterface $input, OutputInterface $output): int
     {
-        $parameters = array_merge($input->getArguments(), $input->getOptions());
-        $event      = $this->dispatch(new BuildBacktestEntityEvent($parameters));
+        $parameters       = array_merge($input->getArguments(), $input->getOptions());
+        $buildEntityEvent = new BuildEntityEvent(BacktestEntity::class, $parameters);
+        $this->dispatch($buildEntityEvent);
 
-        if ($event->hasErrors())
+        if ($this->hasErrors($buildEntityEvent))
         {
-            foreach ($event->getErrors() as $error)
-            {
-                $this->error($error);
-            }
-
             return Command::FAILURE;
         }
 
-        $entity  = $event->getBacktestEntity();
+        /** @var BacktestEntity $entity */
+        $entity  = $buildEntityEvent->getEntity();
         $headers = ['Name', 'Symbol', 'Period', 'Deposit', 'From', 'To'];
         $rows    = [
             [
@@ -59,15 +58,11 @@ class MetatraderBacktestGenerateCommand extends AbstractCommand
         $this->comment('Executing Metatrader Automation...');
         $this->table($headers, $rows);
 
-        $event = $this->dispatch(new MetatraderBacktestExecutionEvent($entity));
+        $metatraderExecutionEvent = new MetatraderExecutionEvent($entity);
+        $this->dispatch($metatraderExecutionEvent);
 
-        if ($event->hasErrors())
+        if ($this->hasErrors($metatraderExecutionEvent))
         {
-            foreach ($event->getErrors() as $error)
-            {
-                $this->error($error);
-            }
-
             return Command::FAILURE;
         }
 

@@ -94,7 +94,7 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * System to handle start / stop of Tick Data Suite during backtest
 * Multiple Expert Advisors and symbols to backtesting at same time
 * Analyze database to allow relaunch the already executed tests
-* May be store backtest report image in the database o folder
+* May be store backtest report image in the database or folder
 
 #### Known bugs
 

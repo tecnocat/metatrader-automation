@@ -13,6 +13,7 @@ one test at a time)
 * ~~Expert Advisor iterator for each available backtest settings~~
 * ~~Form builder and helper to handle dynamic forms based on entities~~
 * Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
+* Command to import already executed Metatrader backtest reports
 
 ## Next steps
 

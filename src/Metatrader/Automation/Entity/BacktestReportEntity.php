@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Entity;
 
 use App\Metatrader\Automation\Repository\BacktestReportEntityRepository;
+use App\Metatrader\Automation\Validator\Constraints as Validators;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=BacktestReportEntityRepository::class)
@@ -13,216 +15,227 @@ use Doctrine\ORM\Mapping as ORM;
 class BacktestReportEntity extends AbstractEntity
 {
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $absoluteDrawdown;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $averageConsecutiveLosses;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $averageConsecutiveWins;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $averageLossTrade;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $averageProfitTrade;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $barsInTest;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $expectedPayoff;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="string")
+     * @Validators\ExpertAdvisor
      */
     private string $expertAdvisor;
 
     /**
+     * @Assert\NotBlank
+     * @ORM\Column(type="datetime")
+     * @Validators\Date("Y-m-d")
+     */
+    private \DateTime $from;
+
+    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $grossLoss;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $grossProfit;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $initialDeposit;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $largestLossTrade;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $largestProfitTrade;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $longPositions;
 
     /**
-     * @ORM\Column(type="float")
-     */
-    private float $longPositionsWon;
-
-    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $lossTrades;
 
     /**
-     * @ORM\Column(type="float")
-     */
-    private float $lossTradesPercent;
-
-    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $maximalConsecutiveLoss;
 
     /**
-     * @ORM\Column(type="integer")
-     */
-    private int $maximalConsecutiveLossCount;
-
-    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $maximalConsecutiveProfit;
 
     /**
-     * @ORM\Column(type="integer")
-     */
-    private int $maximalConsecutiveProfitCount;
-
-    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $maximalDrawdown;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $maximumConsecutiveLosses;
 
     /**
-     * @ORM\Column(type="float")
-     */
-    private float $maximumConsecutiveLossesMoney;
-
-    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $maximumConsecutiveWins;
 
     /**
-     * @ORM\Column(type="float")
-     */
-    private float $maximumConsecutiveWinsMoney;
-
-    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $mismatchedChartsErrors;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="string")
      */
     private string $model;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $modellingQuality;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="string")
      */
     private string $name;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="array")
      */
     private array $parameters;
 
     /**
+     * @Assert\Choice({"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1"})
+     * @Assert\NotBlank
      * @ORM\Column(type="string")
      */
     private string $period;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $profitFactor;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $profitTrades;
 
     /**
-     * @ORM\Column(type="float")
-     */
-    private float $profitTradesPercent;
-
-    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $relativeDrawdown;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $shortPositions;
 
     /**
-     * @ORM\Column(type="float")
-     */
-    private float $shortPositionsWon;
-
-    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $spread;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="string")
      */
     private string $symbol;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $ticksModelled;
 
     /**
+     * @Assert\NotBlank
+     * @ORM\Column(type="datetime")
+     * @Validators\Date("Y-m-d")
+     */
+    private \DateTime $to;
+
+    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="float")
      */
     private float $totalNetProfit;
 
     /**
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $totalTrades;
@@ -307,6 +320,16 @@ class BacktestReportEntity extends AbstractEntity
         $this->expertAdvisor = $expertAdvisor;
     }
 
+    public function getFrom(): \DateTime
+    {
+        return $this->from;
+    }
+
+    public function setFrom(\DateTime $from): void
+    {
+        $this->from = $from;
+    }
+
     public function getGrossLoss(): float
     {
         return $this->grossLoss;
@@ -367,16 +390,6 @@ class BacktestReportEntity extends AbstractEntity
         $this->longPositions = $longPositions;
     }
 
-    public function getLongPositionsWon(): float
-    {
-        return $this->longPositionsWon;
-    }
-
-    public function setLongPositionsWon(float $longPositionsWon): void
-    {
-        $this->longPositionsWon = $longPositionsWon;
-    }
-
     public function getLossTrades(): int
     {
         return $this->lossTrades;
@@ -385,16 +398,6 @@ class BacktestReportEntity extends AbstractEntity
     public function setLossTrades(int $lossTrades): void
     {
         $this->lossTrades = $lossTrades;
-    }
-
-    public function getLossTradesPercent(): float
-    {
-        return $this->lossTradesPercent;
-    }
-
-    public function setLossTradesPercent(float $lossTradesPercent): void
-    {
-        $this->lossTradesPercent = $lossTradesPercent;
     }
 
     public function getMaximalConsecutiveLoss(): float
@@ -407,16 +410,6 @@ class BacktestReportEntity extends AbstractEntity
         $this->maximalConsecutiveLoss = $maximalConsecutiveLoss;
     }
 
-    public function getMaximalConsecutiveLossCount(): int
-    {
-        return $this->maximalConsecutiveLossCount;
-    }
-
-    public function setMaximalConsecutiveLossCount(int $maximalConsecutiveLossCount): void
-    {
-        $this->maximalConsecutiveLossCount = $maximalConsecutiveLossCount;
-    }
-
     public function getMaximalConsecutiveProfit(): float
     {
         return $this->maximalConsecutiveProfit;
@@ -425,16 +418,6 @@ class BacktestReportEntity extends AbstractEntity
     public function setMaximalConsecutiveProfit(float $maximalConsecutiveProfit): void
     {
         $this->maximalConsecutiveProfit = $maximalConsecutiveProfit;
-    }
-
-    public function getMaximalConsecutiveProfitCount(): int
-    {
-        return $this->maximalConsecutiveProfitCount;
-    }
-
-    public function setMaximalConsecutiveProfitCount(int $maximalConsecutiveProfitCount): void
-    {
-        $this->maximalConsecutiveProfitCount = $maximalConsecutiveProfitCount;
     }
 
     public function getMaximalDrawdown(): float
@@ -457,16 +440,6 @@ class BacktestReportEntity extends AbstractEntity
         $this->maximumConsecutiveLosses = $maximumConsecutiveLosses;
     }
 
-    public function getMaximumConsecutiveLossesMoney(): float
-    {
-        return $this->maximumConsecutiveLossesMoney;
-    }
-
-    public function setMaximumConsecutiveLossesMoney(float $maximumConsecutiveLossesMoney): void
-    {
-        $this->maximumConsecutiveLossesMoney = $maximumConsecutiveLossesMoney;
-    }
-
     public function getMaximumConsecutiveWins(): int
     {
         return $this->maximumConsecutiveWins;
@@ -475,16 +448,6 @@ class BacktestReportEntity extends AbstractEntity
     public function setMaximumConsecutiveWins(int $maximumConsecutiveWins): void
     {
         $this->maximumConsecutiveWins = $maximumConsecutiveWins;
-    }
-
-    public function getMaximumConsecutiveWinsMoney(): float
-    {
-        return $this->maximumConsecutiveWinsMoney;
-    }
-
-    public function setMaximumConsecutiveWinsMoney(float $maximumConsecutiveWinsMoney): void
-    {
-        $this->maximumConsecutiveWinsMoney = $maximumConsecutiveWinsMoney;
     }
 
     public function getMismatchedChartsErrors(): int
@@ -567,16 +530,6 @@ class BacktestReportEntity extends AbstractEntity
         $this->profitTrades = $profitTrades;
     }
 
-    public function getProfitTradesPercent(): float
-    {
-        return $this->profitTradesPercent;
-    }
-
-    public function setProfitTradesPercent(float $profitTradesPercent): void
-    {
-        $this->profitTradesPercent = $profitTradesPercent;
-    }
-
     public function getRelativeDrawdown(): float
     {
         return $this->relativeDrawdown;
@@ -595,16 +548,6 @@ class BacktestReportEntity extends AbstractEntity
     public function setShortPositions(int $shortPositions): void
     {
         $this->shortPositions = $shortPositions;
-    }
-
-    public function getShortPositionsWon(): float
-    {
-        return $this->shortPositionsWon;
-    }
-
-    public function setShortPositionsWon(float $shortPositionsWon): void
-    {
-        $this->shortPositionsWon = $shortPositionsWon;
     }
 
     public function getSpread(): int
@@ -635,6 +578,16 @@ class BacktestReportEntity extends AbstractEntity
     public function setTicksModelled(int $ticksModelled): void
     {
         $this->ticksModelled = $ticksModelled;
+    }
+
+    public function getTo(): \DateTime
+    {
+        return $this->to;
+    }
+
+    public function setTo(\DateTime $to): void
+    {
+        $this->to = $to;
     }
 
     public function getTotalNetProfit(): float

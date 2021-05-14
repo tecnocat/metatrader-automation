@@ -6,5 +6,5 @@ namespace App\Metatrader\Automation\Interfaces;
 
 interface DispatcherInterface
 {
-    public function dispatch(EventInterface $event): object;
+    public function dispatch(EventInterface $event): EventInterface;
 }

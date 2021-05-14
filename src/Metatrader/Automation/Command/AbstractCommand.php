@@ -25,9 +25,11 @@ abstract class AbstractCommand extends Command implements DispatcherInterface
         parent::__construct();
     }
 
-    final public function dispatch(EventInterface $event): object
+    final public function dispatch(EventInterface $event): EventInterface
     {
-        return $this->eventDispatcher->dispatch($event, $event->getEventName());
+        $this->eventDispatcher->dispatch($event, $event->getEventName());
+
+        return $event;
     }
 
     /**
@@ -53,6 +55,21 @@ abstract class AbstractCommand extends Command implements DispatcherInterface
     final protected function generateName(): string
     {
         return mb_substr(ClassHelper::getClassNameColons($this), 0, -8);
+    }
+
+    final protected function hasErrors(EventInterface $event): bool
+    {
+        if ($event->hasErrors())
+        {
+            foreach ($event->getErrors() as $error)
+            {
+                $this->error($error);
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     final protected function table(array $headers, array $rows): void

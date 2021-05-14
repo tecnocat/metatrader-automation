@@ -9,14 +9,16 @@ one test at a time)
 
 * ~~Prepare command basics with components and workflow events~~
 * ~~System to load Expert Advisor settings based on .yaml files~~
-* Expert Advisor iterator for each available backtest settings
+* ~~Backtest report parser (to future store in database with Doctrine)~~
+* ~~Expert Advisor iterator for each available backtest settings~~
+* ~~Form builder and helper to handle dynamic forms based on entities~~
+* Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
 
 ## Next steps
 
 * Cluster generator (copy many instances of main Metatrader 4)
 * Workflow steps to detect Metatrader 4 instances free to run
 * System to handle start / stop of Tick Data Suite during backtest
-* Backtest report parser (to future store in database with Doctrine)
 * Multiple Expert Advisors and symbols to backtesting at same time
 
 ### Requirements
@@ -39,19 +41,16 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\ExpertAdvisor;
 
-use App\Metatrader\Automation\Domain\BacktestInterface;
-use App\Metatrader\Automation\Domain\BacktestIteration;
+use App\Metatrader\Automation\Interfaces\EntityInterface;
 
 class YourExpertAdvisorName extends AbstractExpertAdvisor
 {
-    public function getBacktestGenerator(BacktestInterface $backtest): \Generator
+    public function getBacktestGenerator(EntityInterface $backtestEntity): \Generator
     {
         // Your iteration logic to generate a unique backtest report name (see Prudencio)
         for ($i = 1; $i <= 10; $i++)
         {
-            $reportName = "some-unique-name-for-report-based-on-some-parameters-$i.html";
-            
-            yield new BacktestIteration($reportName);
+            yield "some-unique-name-for-report-based-on-some-parameters-$i.html";
         }
     }
 }
@@ -67,6 +66,14 @@ composer install
 
 ### How to run
 
+#### Backtest generate reports command
+
 ````bash
-php .\bin\console -e dev run-backtest --help
+php .\bin\console metatrader:backtest:generate --help
+````
+
+#### Backtest import reports command
+
+````bash
+php .\bin\console metatrader:backtest:import --help
 ````

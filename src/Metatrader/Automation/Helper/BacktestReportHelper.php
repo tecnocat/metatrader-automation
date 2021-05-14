@@ -22,6 +22,11 @@ class BacktestReportHelper
             {
                 $parameters[$parameterName] = $parameterValue;
             }
+
+            if (52 == $number)
+            {
+                break;
+            }
         }
 
         return self::transforms($parameters);

@@ -12,8 +12,9 @@ one test at a time)
 * ~~Backtest report parser (to future store in database with Doctrine)~~
 * ~~Expert Advisor iterator for each available backtest settings~~
 * ~~Form builder and helper to handle dynamic forms based on entities~~
+* ~~Command to import already executed Metatrader backtest reports~~
+* Find on data folder for installed Metatrader 4 instances and launch 
 * Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
-* Command to import already executed Metatrader backtest reports
 
 ## Next steps
 
@@ -21,6 +22,13 @@ one test at a time)
 * Workflow steps to detect Metatrader 4 instances free to run
 * System to handle start / stop of Tick Data Suite during backtest
 * Multiple Expert Advisors and symbols to backtesting at same time
+* Analyze database to allow relaunch the already executed tests
+* May be store backtest report image in the database o folder
+
+## Known bugs
+
+* The import command take too much time between backtest reports
+* Date validator is failing when one of the date fields is empty
 
 ### Requirements
 

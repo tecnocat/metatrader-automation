@@ -15,8 +15,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 class BacktestEntity extends AbstractEntity
 {
     /**
-     * @Assert\NotBlank
      * @Assert\GreaterThanOrEqual(500)
+     * @Assert\NotBlank
      * @ORM\Column(type="integer")
      */
     private int $deposit;
@@ -36,9 +36,9 @@ class BacktestEntity extends AbstractEntity
     private string $name;
 
     /**
+     * @Assert\Choice({"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1"})
      * @Assert\NotBlank
      * @ORM\Column(type="string")
-     * @Assert\Choice({"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1"})
      */
     private string $period;
 

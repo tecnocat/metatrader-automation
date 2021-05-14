@@ -63,7 +63,12 @@ class Kernel extends BaseKernel implements CompilerPassInterface
 
         foreach ($classMap as $className => $classFile)
         {
-            if (false === mb_strpos(realpath($classFile), __DIR__))
+            if (!$realPath = realpath($classFile))
+            {
+                throw new \RuntimeException("Missing class $className in composer autoload, run composer dump-autoload to fix that.");
+            }
+
+            if (false === mb_strpos($realPath, __DIR__))
             {
                 continue;
             }

@@ -43,7 +43,7 @@ See `config/services.yaml` to set up all the settings for your Expert Advisors a
 ---
 parameters:
   metatrader:
-    data_path: C:\Path\To\Data\Directory # Usually C:\Users\<YourUsername>\AppData\Roaming\MetaQuotes\Terminal
+    data_path: C:\Path\To\Data\Directory # Usually C:\Users\You\AppData\Roaming\MetaQuotes\Terminal
   expert_advisors:
     YourExpertAdvisorName:
       active: true # Required

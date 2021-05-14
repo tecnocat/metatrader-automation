@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Command;
 
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
-use App\Metatrader\Automation\Event\Entity\BuildBacktestReportEntityEvent;
-use App\Metatrader\Automation\Event\FindEntityEvent;
+use App\Metatrader\Automation\Event\Entity\BuildEntityEvent;
+use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
+use App\Metatrader\Automation\Event\Entity\SaveEntityEvent;
 use App\Metatrader\Automation\Helper\BacktestReportHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -53,28 +54,34 @@ class MetatraderBacktestImportCommand extends AbstractCommand
             $name = $file->getFilename();
             $this->comment("Parsing backtest report $name ...");
 
-            $criteria = ['name' => $name];
-            $event    = $this->dispatch(new FindEntityEvent(BacktestReportEntity::class, $criteria));
+            $criteria        = ['name' => $name];
+            $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
+            $this->dispatch($findEntityEvent);
 
-            if ($event->existsEntity())
+            if ($findEntityEvent->isFound())
             {
                 $this->comment("Backtest report $name already imported, skipping ...");
 
                 continue;
             }
 
-            $parameters = BacktestReportHelper::parseFile($file->getRealPath());
-            $event      = $this->dispatch(new BuildBacktestReportEntityEvent($parameters));
+            $buildEntityEvent = new BuildEntityEvent(BacktestReportEntity::class, BacktestReportHelper::parseFile($file->getRealPath()));
+            $this->dispatch($buildEntityEvent);
 
-            if ($event->hasErrors())
+            if (!$this->hasErrors($buildEntityEvent))
             {
-                foreach ($event->getErrors() as $error)
-                {
-                    $this->error($error);
-                }
-
                 return Command::FAILURE;
             }
+
+            $saveEntityEvent = new SaveEntityEvent($buildEntityEvent->getEntity());
+            $this->dispatch($saveEntityEvent);
+
+            if (!$this->hasErrors($saveEntityEvent))
+            {
+                return Command::FAILURE;
+            }
+
+            $this->comment("Backtest report $name imported successfully!");
         }
 
         return Command::SUCCESS;

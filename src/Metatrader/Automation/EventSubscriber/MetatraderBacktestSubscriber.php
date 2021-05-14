@@ -7,10 +7,9 @@ namespace App\Metatrader\Automation\EventSubscriber;
 use App\Metatrader\Automation\Annotation\Dependency;
 use App\Metatrader\Automation\Annotation\Subscriber;
 use App\Metatrader\Automation\Entity\BacktestEntity;
-use App\Metatrader\Automation\Event\FindEntityEvent;
+use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\MetatraderBacktestExecutionEvent;
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
-use App\Metatrader\Automation\ExpertAdvisor\ExpertAdvisorParameters;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
@@ -22,7 +21,7 @@ class MetatraderBacktestSubscriber extends AbstractEventSubscriber
     /**
      * @Dependency
      */
-    private ContainerBagInterface $containerBag;
+    public ContainerBagInterface $containerBag;
 
     public function onExecutionEvent(MetatraderBacktestExecutionEvent $executionEvent): void
     {
@@ -40,10 +39,11 @@ class MetatraderBacktestSubscriber extends AbstractEventSubscriber
 
         while ($backtestGenerator->valid())
         {
-            $criteria = ['name' => $backtestGenerator->current()];
-            $event    = $this->dispatch(new FindEntityEvent(BacktestEntity::class, $criteria));
+            $criteria        = ['name' => $backtestGenerator->current()];
+            $findEntityEvent = new FindEntityEvent(BacktestEntity::class, $criteria);
+            $this->dispatch($findEntityEvent);
 
-            if ($event->existsEntity())
+            if ($findEntityEvent->isFound())
             {
                 echo $backtestGenerator->current() . ' FOUND!' . PHP_EOL;
                 $backtestGenerator->next();
@@ -55,11 +55,6 @@ class MetatraderBacktestSubscriber extends AbstractEventSubscriber
 
             $backtestGenerator->next();
         }
-    }
-
-    public function setContainerBagInterface(ContainerBagInterface $containerBag): void
-    {
-        $this->containerBag = $containerBag;
     }
 
     private function getExpertAdvisorInstance(string $name): AbstractExpertAdvisor

@@ -1,10 +1,10 @@
-# Metatrader Automation
+# Metatrader Automation 📈
 
 This project born due to the need to run many instances of Metatrader 4 to do an automatic backtesting with Tick Data
 Suite enabled, and my first php script was totally destroying the PHP OOP concepts and best practices becoming a big
 monster, and additionally is taken soo long time to do the backtesting because only use one instance of Metatrader 4
 
-## Installation
+## Installation 🧙
 
 ````bash
 git clone https://github.com/tecnocat/metatrader-automation.git
@@ -12,30 +12,30 @@ cd metatrader-automation
 composer install
 ````
 
-### How to run
+### How to run ⁉️
 
-#### Backtest generate reports command (not yet completed)
+#### Backtest generate reports command 💻 (‼️ not yet completed ‼️)
 
 ````bash
 php bin/console metatrader:backtest:generate --help
 ````
 
-#### Backtest import reports command
+#### Backtest import reports command 💻
 
 ````bash
 php bin/console metatrader:backtest:import --help
 ````
 
-## Implementation
+## Implementation 🌠
 
-### Requirements
+### Requirements 🏁
 
 * PHP 7.4.6
 * Some PHP extensions enabled on PHP CLI (run composer install to know what)
 * Metatrader 4
 * An Expert Advisor implemented in `src/Metatrader/Automation/ExpertAdvisor`
 
-### Metatrader 4 Implementation
+### Metatrader 4 Implementation 📊
 
 See `config/services.yaml` to set up all the settings for your Expert Advisors and Metatrader 4 data directory
 
@@ -53,7 +53,7 @@ parameters:
       foo: bar
 ````
 
-### PHP Expert Advisor implementation
+### PHP Expert Advisor implementation 🤖
 
 ````php
 <?php
@@ -80,14 +80,14 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 }
 ````
 
-### Development information
+## Development information 🐙
 
-#### Currently development
+#### Currently development 🔥
 
 * Find on data folder for installed Metatrader 4 instances and launch
 * Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
 
-#### Next steps
+#### Next steps ✨
 
 * Cluster generator (copy many instances of main Metatrader 4)
 * Workflow steps to detect Metatrader 4 instances free to run
@@ -96,12 +96,12 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Analyze database to allow relaunch the already executed tests
 * May be store backtest report image in the database or folder
 
-#### Known bugs
+#### Known bugs 🐞
 
 * The import command take too much time between backtest reports
 * Date validator is failing when one of the date fields is empty
 
-#### Already done
+#### Already done ✔️
 
 * Prepare command basics with components and workflow events
 * System to load Expert Advisor settings based on .yaml files

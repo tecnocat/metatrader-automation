@@ -66,10 +66,10 @@ abstract class AbstractCommand extends Command implements DispatcherInterface
                 $this->error($error);
             }
 
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     final protected function table(array $headers, array $rows): void

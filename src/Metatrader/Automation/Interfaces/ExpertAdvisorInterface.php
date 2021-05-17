@@ -10,7 +10,7 @@ interface ExpertAdvisorInterface
 {
     public static function getExpertAdvisorClass(string $expertAdvisorName): string;
 
-    public function getBacktestGenerator(EntityInterface $backtestEntity): \Generator;
+    public function getBacktestReportName(EntityInterface $backtestEntity): \Generator;
 
     public function getName(): string;
 

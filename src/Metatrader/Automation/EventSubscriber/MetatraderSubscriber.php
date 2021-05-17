@@ -6,7 +6,7 @@ namespace App\Metatrader\Automation\EventSubscriber;
 
 use App\Metatrader\Automation\Annotation\Dependency;
 use App\Metatrader\Automation\Annotation\Subscriber;
-use App\Metatrader\Automation\Entity\BacktestEntity;
+use App\Metatrader\Automation\Entity\BacktestReportEntity;
 use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\MetatraderExecutionEvent;
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
@@ -35,25 +35,20 @@ class MetatraderSubscriber extends AbstractEventSubscriber
             return;
         }
 
-        $backtestGenerator = $expertAdvisor->getBacktestGenerator($backtestEntity);
-
-        while ($backtestGenerator->valid())
+        foreach ($expertAdvisor->getBacktestReportName($backtestEntity) as $backtestReportName)
         {
-            $criteria        = ['name' => $backtestGenerator->current()];
-            $findEntityEvent = new FindEntityEvent(BacktestEntity::class, $criteria);
+            $criteria        = ['name' => $backtestReportName];
+            $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
             $this->dispatch($findEntityEvent);
 
             if ($findEntityEvent->isFound())
             {
-                echo $backtestGenerator->current() . ' FOUND!' . PHP_EOL;
-                $backtestGenerator->next();
+                echo $backtestReportName . ' FOUND!' . PHP_EOL;
 
                 continue;
             }
 
-            echo $backtestGenerator->current() . ' MISSING!' . PHP_EOL;
-
-            $backtestGenerator->next();
+            echo $backtestReportName . ' MISSING!' . PHP_EOL;
         }
     }
 

@@ -8,7 +8,7 @@ use App\Metatrader\Automation\Interfaces\EntityInterface;
 
 class Prudencio extends AbstractExpertAdvisor
 {
-    public function getBacktestGenerator(EntityInterface $backtestEntity): \Generator
+    public function getBacktestReportName(EntityInterface $backtestEntity): \Generator
     {
         $fromDate     = clone $backtestEntity->getFrom();
         $toDate       = $backtestEntity->getTo();

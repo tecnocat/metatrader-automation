@@ -66,7 +66,7 @@ use App\Metatrader\Automation\Interfaces\EntityInterface;
 
 class YourExpertAdvisorName extends AbstractExpertAdvisor
 {
-    public function getBacktestGenerator(EntityInterface $backtestEntity): \Generator
+    public function getBacktestReportName(EntityInterface $backtestEntity): \Generator
     {
         // You can fetch Expert Advisor parameters calling $this->getParameters() 
         $limit = $this->getParameters()->get('limit');

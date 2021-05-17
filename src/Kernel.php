@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Metatrader\Automation\Annotation\Dependency;
+use App\Metatrader\Automation\Annotation\Listen;
 use App\Metatrader\Automation\Annotation\Subscriber;
 use App\Metatrader\Automation\Helper\ClassHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -56,6 +57,9 @@ class Kernel extends BaseKernel implements CompilerPassInterface
         }
     }
 
+    /**
+     * TODO: Make this monster reusable and testable inside a compiler pass
+     */
     private function parseAnnotations(ContainerBuilder $container): void
     {
         $annotationReader = new AnnotationReader();
@@ -96,24 +100,31 @@ class Kernel extends BaseKernel implements CompilerPassInterface
                         continue;
                     }
 
-                    foreach ($method->getParameters() as $methodParameter)
+                    if ($annotation = $annotationReader->getMethodAnnotation($method, Listen::class))
                     {
+                        $eventName = $annotation->event;
+                    }
+                    else
+                    {
+                        $methodParameter = current($method->getParameters());
+
                         if (!$methodParameter->hasType())
                         {
                             continue;
                         }
 
-                        $eventType  = ClassHelper::getClassNameDot($methodParameter->getType()->getName());
-                        $eventName  = str_replace('.event', '', $eventType);
-                        $definition = $container->getDefinition($className);
-                        $definition->addTag(
-                            'kernel.event_listener',
-                            [
-                                'event'  => $eventName,
-                                'method' => $method->getName(),
-                            ]
-                        );
+                        $eventType = ClassHelper::getClassNameDot($methodParameter->getType()->getName());
+                        $eventName = str_replace('.event', '', $eventType);
                     }
+
+                    $definition = $container->getDefinition($className);
+                    $definition->addTag(
+                        'kernel.event_listener',
+                        [
+                            'event'  => $eventName,
+                            'method' => $method->getName(),
+                        ]
+                    );
                 }
             }
 

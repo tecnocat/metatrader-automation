@@ -49,11 +49,11 @@ class FormHelper
                     new CallbackTransformer(
                         function ($value)
                         {
-                            return !empty($value) ? serialize($value) : null;
+                            return !empty($value) ? serialize($value) : null; // @codeCoverageIgnore
                         },
                         function ($value)
                         {
-                            return !empty($value) ? unserialize($value) : null;
+                            return !empty($value) ? unserialize($value) : null; // @codeCoverageIgnore
                         }
                     )
                 )

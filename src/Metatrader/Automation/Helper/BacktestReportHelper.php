@@ -23,7 +23,7 @@ class BacktestReportHelper
                 $parameters[$parameterName] = $parameterValue;
             }
 
-            if (52 == $number)
+            if (52 === $number)
             {
                 break;
             }
@@ -132,8 +132,11 @@ class BacktestReportHelper
             yield $handle->fgets();
         }
 
+        // @codeCoverageIgnoreStart
         $handle = null;
     }
+
+    // @codeCoverageIgnoreEnd
 
     private static function toAttribute(string $attribute): string
     {
@@ -147,7 +150,7 @@ class BacktestReportHelper
         $parameters['to']             = str_replace('.', '-', $parameters['to']);
         $parameters['initialDeposit'] = str_replace('.00', '', $parameters['initialDeposit']);
 
-        if ('Variable' == $parameters['spread'])
+        if ('Variable' === $parameters['spread'])
         {
             $parameters['spread'] = -1;
         }
@@ -156,10 +159,10 @@ class BacktestReportHelper
 
         foreach ($parameters as $parameterName => $parameterValue)
         {
-            if ('input' == substr($parameterName, 0, 5))
+            if ('input' === mb_substr($parameterName, 0, 5))
             {
                 unset($parameters[$parameterName]);
-                $inputs[substr($parameterName, 5)] = $parameterValue;
+                $inputs[mb_substr($parameterName, 5)] = $parameterValue;
             }
         }
 

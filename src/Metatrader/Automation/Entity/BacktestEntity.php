@@ -23,15 +23,28 @@ class BacktestEntity extends AbstractEntity
 
     /**
      * @Assert\NotBlank
+     * @ORM\Column(type="string")
+     * @Validators\ExpertAdvisor
+     */
+    private string $expertAdvisor;
+
+    /**
+     * @Assert\NotBlank
      * @ORM\Column(type="datetime", name="`from`")
      * @Validators\Date("Y-m-d")
      */
     private \DateTime $from;
 
     /**
-     * @Assert\NotBlank
+     * @Assert\Regex("/^(M|H|D|W|MN)(1|4|5|15|30)-\d{4}\.\d{2}\.\d{2}-\d{4}\.\d{2}\.\d{2}-.*\.html$/")
      * @ORM\Column(type="string")
-     * @Validators\ExpertAdvisor
+     */
+    private string $lastBacktestReport;
+
+    /**
+     * @Assert\NotBlank
+     * @Assert\Regex("/^[A-Z]{1}[a-z]+:\.?\w+:(M|H|D|W|MN)(1|4|5|15|30):\d+:\d{4}-\d{2}-\d{2}:\d{4}-\d{2}-\d{2}$/")
+     * @ORM\Column(type="string")
      */
     private string $name;
 
@@ -65,6 +78,16 @@ class BacktestEntity extends AbstractEntity
         $this->deposit = $deposit;
     }
 
+    public function getExpertAdvisor(): string
+    {
+        return $this->expertAdvisor;
+    }
+
+    public function setExpertAdvisor(string $expertAdvisor): void
+    {
+        $this->expertAdvisor = $expertAdvisor;
+    }
+
     public function getFrom(): \DateTime
     {
         return $this->from;
@@ -73,6 +96,16 @@ class BacktestEntity extends AbstractEntity
     public function setFrom(\DateTime $from): void
     {
         $this->from = $from;
+    }
+
+    public function getLastBacktestReport(): string
+    {
+        return $this->lastBacktestReport;
+    }
+
+    public function setLastBacktestReport(string $lastBacktestReport): void
+    {
+        $this->lastBacktestReport = $lastBacktestReport;
     }
 
     public function getName(): string

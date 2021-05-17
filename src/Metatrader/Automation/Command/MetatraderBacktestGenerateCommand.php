@@ -19,7 +19,7 @@ class MetatraderBacktestGenerateCommand extends AbstractCommand
         parent::configure();
 
         $this
-            ->addArgument('name', InputArgument::REQUIRED, 'The name of the Expert Advisor')
+            ->addArgument('expertAdvisor', InputArgument::REQUIRED, 'The name of the Expert Advisor')
             ->addArgument('symbol', InputArgument::REQUIRED, 'The symbol to test with the Expert Advisor')
             ->addArgument('period', InputArgument::REQUIRED, 'The period to test with the Expert Advisor')
             ->addArgument('deposit', InputArgument::REQUIRED, 'The amount of equity to test with the Expert Advisor')
@@ -44,10 +44,10 @@ class MetatraderBacktestGenerateCommand extends AbstractCommand
 
         /** @var BacktestEntity $entity */
         $entity  = $buildEntityEvent->getEntity();
-        $headers = ['Name', 'Symbol', 'Period', 'Deposit', 'From', 'To'];
+        $headers = ['Expert Advisor', 'Symbol', 'Period', 'Deposit', 'From', 'To'];
         $rows    = [
             [
-                $entity->getName(),
+                $entity->getExpertAdvisor(),
                 $entity->getSymbol(),
                 $entity->getPeriod(),
                 $entity->getDeposit(),

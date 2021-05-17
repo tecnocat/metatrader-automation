@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Application\Helper;
+namespace App\Tests\Metatrader\Automation\Helper;
 
 class ClassHelperTestObjectSource extends ClassHelperTestObject
 {

@@ -18,7 +18,7 @@ abstract class AbstractBaseType extends AbstractType implements NamespaceInterfa
         return __NAMESPACE__;
     }
 
-    final public function buildForm(FormBuilderInterface $builder, array $options): void
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         parent::buildForm($builder, $options);
 

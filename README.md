@@ -95,6 +95,7 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Multiple Expert Advisors and symbols to backtesting at same time
 * Analyze database to allow relaunch the already executed tests
 * May be store backtest report image in the database or folder
+* Put Expert Advisor input parameters inside class as properties
 
 #### Known bugs 🐞
 

@@ -29,6 +29,6 @@ abstract class AbstractEvent implements EventInterface, ErrorInterface
 
     final public function getEventName(): string
     {
-        return str_replace('.event', '', ClassHelper::getClassNameDotted($this));
+        return str_replace('.event', '', ClassHelper::getClassNameDot($this));
     }
 }

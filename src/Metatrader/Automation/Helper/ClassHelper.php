@@ -47,7 +47,7 @@ class ClassHelper
     /**
      * @param object|string $class
      */
-    public static function getClassNameColons($class): string
+    public static function getClassNameColon($class): string
     {
         return self::getClassNameGlue($class, ':');
     }
@@ -55,7 +55,7 @@ class ClassHelper
     /**
      * @param object|string $class
      */
-    public static function getClassNameDashed($class): string
+    public static function getClassNameDash($class): string
     {
         return self::getClassNameGlue($class, '-');
     }
@@ -63,7 +63,7 @@ class ClassHelper
     /**
      * @param object|string $class
      */
-    public static function getClassNameDotted($class): string
+    public static function getClassNameDot($class): string
     {
         return self::getClassNameGlue($class, '.');
     }
@@ -153,7 +153,7 @@ class ClassHelper
         return self::formulae(self::toCamelCase($name), ':');
     }
 
-    public static function toDashed(string $name): string
+    public static function toDash(string $name): string
     {
         return self::formulae(self::toCamelCase($name), '-');
     }

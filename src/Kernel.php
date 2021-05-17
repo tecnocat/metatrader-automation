@@ -103,7 +103,7 @@ class Kernel extends BaseKernel implements CompilerPassInterface
                             continue;
                         }
 
-                        $eventType  = ClassHelper::getClassNameDotted($methodParameter->getType()->getName());
+                        $eventType  = ClassHelper::getClassNameDot($methodParameter->getType()->getName());
                         $eventName  = str_replace('.event', '', $eventType);
                         $definition = $container->getDefinition($className);
                         $definition->addTag(

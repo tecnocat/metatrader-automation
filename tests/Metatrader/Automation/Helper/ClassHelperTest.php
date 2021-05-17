@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Metatrader\Automation\Helper;
 
 use App\Metatrader\Automation\Helper\ClassHelper;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use PHPUnit\Framework\TestCase;
 
-class ClassHelperTest extends WebTestCase
+class ClassHelperTest extends TestCase
 {
     public function getToCamelCaseData(): array
     {
@@ -28,10 +28,28 @@ class ClassHelperTest extends WebTestCase
                 'std.class',
                 'StdClass',
             ],
+            [
+                'std:class',
+                'StdClass',
+            ],
         ];
     }
 
-    public function getToDashedData(): array
+    public function getToColonData(): array
+    {
+        return [
+            [
+                'StdClass',
+                'std:class',
+            ],
+            [
+                'TESTStdClass',
+                'test:std:class',
+            ],
+        ];
+    }
+
+    public function getToDashData(): array
     {
         return [
             [
@@ -111,14 +129,19 @@ class ClassHelperTest extends WebTestCase
         static::assertSame('StdClass', ClassHelper::getClassNameCamelCase(new \stdClass()));
     }
 
-    public function testGetClassNameDashed(): void
+    public function testGetClassNameColon(): void
     {
-        static::assertSame('std-class', ClassHelper::getClassNameDashed(new \stdClass()));
+        static::assertSame('std:class', ClassHelper::getClassNameColon(new \stdClass()));
     }
 
-    public function testGetClassNameDotted(): void
+    public function testGetClassNameDash(): void
     {
-        static::assertSame('std.class', ClassHelper::getClassNameDotted(new \stdClass()));
+        static::assertSame('std-class', ClassHelper::getClassNameDash(new \stdClass()));
+    }
+
+    public function testGetClassNameDot(): void
+    {
+        static::assertSame('std.class', ClassHelper::getClassNameDot(new \stdClass()));
     }
 
     public function testGetClassNameUnderscore(): void
@@ -218,11 +241,19 @@ class ClassHelperTest extends WebTestCase
     }
 
     /**
-     * @dataProvider getToDashedData
+     * @dataProvider getToColonData
      */
-    public function testToDashed(string $class, string $expected): void
+    public function testToColon(string $class, string $expected): void
     {
-        static::assertSame($expected, ClassHelper::toDashed($class));
+        static::assertSame($expected, ClassHelper::toColon($class));
+    }
+
+    /**
+     * @dataProvider getToDashData
+     */
+    public function testToDash(string $class, string $expected): void
+    {
+        static::assertSame($expected, ClassHelper::toDash($class));
     }
 
     /**

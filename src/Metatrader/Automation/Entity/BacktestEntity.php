@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=BacktestEntityRepository::class)
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns="name")})
  */
 class BacktestEntity extends AbstractEntity
 {
@@ -44,7 +45,7 @@ class BacktestEntity extends AbstractEntity
     /**
      * @Assert\NotBlank
      * @Assert\Regex("/^[A-Z]{1}[a-z]+:\.?\w+:(M|H|D|W|MN)(1|4|5|15|30):\d+:\d{4}-\d{2}-\d{2}:\d{4}-\d{2}-\d{2}$/")
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=64)
      */
     private string $name;
 

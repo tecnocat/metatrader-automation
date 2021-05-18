@@ -49,11 +49,8 @@ class EntitySubscriber extends AbstractEventSubscriber
 
     public function onFindEntityEvent(FindEntityEvent $event): void
     {
-        $repository = $this->entityManager->getRepository($event->getClass());
-        $criteria   = $event->getCriteria();
-
         /** @var EntityInterface $entity */
-        if (null !== $entity = $repository->findOneBy($criteria))
+        if (null !== $entity = $this->entityManager->getRepository($event->getClass())->findOneBy($event->getCriteria()))
         {
             $event->setEntity($entity);
         }
@@ -63,6 +60,8 @@ class EntitySubscriber extends AbstractEventSubscriber
     {
         $this->entityManager->persist($event->getEntity());
         $this->entityManager->flush();
-        $this->entityManager->clear();
+
+        // TODO: What happens when batching a lot of entities? Comment while thinking about that
+        //$this->entityManager->clear();
     }
 }

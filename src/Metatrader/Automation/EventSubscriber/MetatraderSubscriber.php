@@ -10,7 +10,7 @@ use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
 use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\Entity\SaveEntityEvent;
-use App\Metatrader\Automation\Event\MetatraderExecutionEvent;
+use App\Metatrader\Automation\Event\Metatrader\MetatraderExecutionEvent;
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -25,56 +25,37 @@ class MetatraderSubscriber extends AbstractEventSubscriber
      */
     public ContainerBagInterface $containerBag;
 
-    /**
-     * TODO: Main workflow from other events only.
-     */
-    public function onMetatraderExecutionEvent(MetatraderExecutionEvent $metatraderExecutionEvent): void
+    public function onMetatraderExecutionEvent(MetatraderExecutionEvent $event): void
     {
-        $backtestEntity = $metatraderExecutionEvent->getBacktestEntity();
-        $expertAdvisor  = $this->getExpertAdvisorInstance($backtestEntity->getExpertAdvisor());
-
-        if (!$expertAdvisor->isActive())
+        if (!$this->isActiveExpertAdvisor($event))
         {
-            $metatraderExecutionEvent->addError('The Expert Advisor ' . $expertAdvisor->getName() . ' is not active');
+            $event->addError('The Expert Advisor ' . $event->getExpertAdvisor()->getName() . ' is not active');
 
             return;
         }
 
-        $criteria        = ['name' => $backtestEntity->getName()];
-        $findEntityEvent = new FindEntityEvent(BacktestEntity::class, $criteria);
-        $this->dispatch($findEntityEvent);
-
-        if ($findEntityEvent->isFound())
+        if ($this->isFoundBacktestEntity($event))
         {
-            /** @var BacktestEntity $backtestEntity */
-            $backtestEntity     = $findEntityEvent->getEntity();
-            $lastBacktestReport = $backtestEntity->getLastBacktestReport();
+            $lastBacktestReport = $event->getBacktestEntity()->getLastBacktestReport();
         }
 
-        foreach ($expertAdvisor->getBacktestReportName($backtestEntity) as $backtestReportName)
+        foreach ($event->getExpertAdvisor()->getBacktestReportName($event->getBacktestEntity()) as $backtestReportName)
         {
             if (!isset($continue) && isset($lastBacktestReport) && $lastBacktestReport !== $backtestReportName)
             {
                 continue;
             }
 
-            $continue        = true;
-            $criteria        = [
-                'name'           => $backtestReportName,
-                'expertAdvisor'  => $expertAdvisor->getName(),
-                'initialDeposit' => $backtestEntity->getDeposit(),
-                'period'         => $backtestEntity->getPeriod(),
-                'symbol'         => $backtestEntity->getSymbol(),
-            ];
-            $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
-            $this->dispatch($findEntityEvent);
+            $continue = true;
 
-            if ($findEntityEvent->isFound())
+            if ($this->isFoundBacktestReportEntity($event, $backtestReportName))
             {
-                echo $backtestReportName . ' FOUND!' . PHP_EOL;
+                echo $backtestReportName . ' already executed, skip...' . PHP_EOL;
 
                 continue;
             }
+
+            echo $backtestReportName . ' processing...' . PHP_EOL;
 
             // TODO: Prepare terminal.ini
             // TODO: Prepare expertAdvisor.ini
@@ -83,17 +64,10 @@ class MetatraderSubscriber extends AbstractEventSubscriber
             // TODO: Metatrader backtest launch
             // TODO: Save backtest report to database
 
-            $backtestEntity->setLastBacktestReport($backtestReportName);
-            $saveEntityEvent = new SaveEntityEvent($backtestEntity);
-            $this->dispatch($saveEntityEvent);
+            $event->getBacktestEntity()->setLastBacktestReport($backtestReportName);
 
-            if ($saveEntityEvent->hasErrors())
+            if (!$this->isSavedEntity($event))
             {
-                foreach ($saveEntityEvent->getErrors() as $error)
-                {
-                    $metatraderExecutionEvent->addError($error);
-                }
-
                 return;
             }
         }
@@ -105,5 +79,63 @@ class MetatraderSubscriber extends AbstractEventSubscriber
         $parameters = new ParameterBag($this->containerBag->get('expert_advisors')[$name] ?? []);
 
         return new $class($name, $parameters);
+    }
+
+    private function isActiveExpertAdvisor(MetatraderExecutionEvent $event): bool
+    {
+        $event->setExpertAdvisor($this->getExpertAdvisorInstance($event->getBacktestEntity()->getExpertAdvisor()));
+
+        return $event->getExpertAdvisor()->isActive();
+    }
+
+    private function isFoundBacktestEntity(MetatraderExecutionEvent $event): bool
+    {
+        $criteria        = ['name' => $event->getBacktestEntity()->getName()];
+        $findEntityEvent = new FindEntityEvent(BacktestEntity::class, $criteria);
+        $this->dispatch($findEntityEvent);
+
+        if ($findEntityEvent->isFound())
+        {
+            /** @var BacktestEntity $backtestEntity */
+            $backtestEntity = $findEntityEvent->getEntity();
+            $event->setBacktestEntity($backtestEntity);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isFoundBacktestReportEntity(MetatraderExecutionEvent $event, string $backtestReportName): bool
+    {
+        $criteria        = [
+            'name'           => $backtestReportName,
+            'expertAdvisor'  => $event->getExpertAdvisor()->getName(),
+            'initialDeposit' => $event->getBacktestEntity()->getDeposit(),
+            'period'         => $event->getBacktestEntity()->getPeriod(),
+            'symbol'         => $event->getBacktestEntity()->getSymbol(),
+        ];
+        $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
+        $this->dispatch($findEntityEvent);
+
+        return $findEntityEvent->isFound();
+    }
+
+    private function isSavedEntity(MetatraderExecutionEvent $event): bool
+    {
+        $saveEntityEvent = new SaveEntityEvent($event->getBacktestEntity());
+        $this->dispatch($saveEntityEvent);
+
+        if ($saveEntityEvent->hasErrors())
+        {
+            foreach ($saveEntityEvent->getErrors() as $error)
+            {
+                $event->addError($error);
+            }
+
+            return false;
+        }
+
+        return true;
     }
 }

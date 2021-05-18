@@ -6,7 +6,7 @@ namespace App\Metatrader\Automation\Command;
 
 use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Event\Entity\BuildEntityEvent;
-use App\Metatrader\Automation\Event\MetatraderExecutionEvent;
+use App\Metatrader\Automation\Event\Metatrader\MetatraderExecutionEvent;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 

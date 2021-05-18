@@ -10,10 +10,7 @@ use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\Entity\SaveEntityEvent;
 use App\Metatrader\Automation\Helper\BacktestReportHelper;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 
 class MetatraderBacktestImportCommand extends AbstractCommand
@@ -30,12 +27,12 @@ class MetatraderBacktestImportCommand extends AbstractCommand
         ;
     }
 
-    protected function process(InputInterface $input, OutputInterface $output): int
+    public function process(): int
     {
         try
         {
             $finder = new Finder();
-            $finder->files()->in($directory = $input->getArgument('directory'))->name('*.html');
+            $finder->files()->in($directory = $this->getArgument('directory'))->name('*.html');
         }
         catch (\Exception $exception)
         {
@@ -51,7 +48,7 @@ class MetatraderBacktestImportCommand extends AbstractCommand
             return Command::FAILURE;
         }
 
-        $progressBar = $this->getProgressBar($output, $finder->count());
+        $progressBar = $this->getProgressBar($finder->count());
 
         foreach ($finder as $file)
         {
@@ -71,7 +68,7 @@ class MetatraderBacktestImportCommand extends AbstractCommand
             $buildEntityEvent = new BuildEntityEvent(BacktestReportEntity::class, BacktestReportHelper::parseFile($file->getRealPath()));
             $this->dispatch($buildEntityEvent);
 
-            if (!$this->hasErrors($buildEntityEvent))
+            if ($this->hasErrors($buildEntityEvent))
             {
                 return Command::FAILURE;
             }
@@ -79,7 +76,7 @@ class MetatraderBacktestImportCommand extends AbstractCommand
             $saveEntityEvent = new SaveEntityEvent($buildEntityEvent->getEntity());
             $this->dispatch($saveEntityEvent);
 
-            if (!$this->hasErrors($saveEntityEvent))
+            if ($this->hasErrors($saveEntityEvent))
             {
                 return Command::FAILURE;
             }
@@ -91,20 +88,5 @@ class MetatraderBacktestImportCommand extends AbstractCommand
         $progressBar->finish();
 
         return Command::SUCCESS;
-    }
-
-    private function getProgressBar(OutputInterface $output, int $total): ProgressBar
-    {
-        $spacer = str_repeat(' ', mb_strlen((string) $total) * 2 + 2);
-        $format = "\n$spacer %message%\n\n <fg=yellow>%current%</>/<fg=green>%max%</> [%bar%] %percent:3s%%\n";
-        ProgressBar::setFormatDefinition('custom', $format);
-        $progressBar = new ProgressBar($output, $total);
-        $progressBar->setBarWidth(80);
-        $progressBar->setFormat('custom');
-        $progressBar->setBarCharacter('<fg=green>|</>');
-        $progressBar->setProgressCharacter('<fg=yellow>></>');
-        $progressBar->setEmptyBarCharacter('<fg=red>-</>');
-
-        return $progressBar;
     }
 }

@@ -9,8 +9,6 @@ use App\Metatrader\Automation\Event\Entity\BuildEntityEvent;
 use App\Metatrader\Automation\Event\MetatraderExecutionEvent;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class MetatraderBacktestGenerateCommand extends AbstractCommand
 {
@@ -31,9 +29,9 @@ class MetatraderBacktestGenerateCommand extends AbstractCommand
         ;
     }
 
-    protected function process(InputInterface $input, OutputInterface $output): int
+    public function process(): int
     {
-        $parameters       = array_merge($input->getArguments(), $input->getOptions());
+        $parameters       = array_merge($this->getArguments(), $this->getOptions());
         $buildEntityEvent = new BuildEntityEvent(BacktestEntity::class, $parameters);
         $this->dispatch($buildEntityEvent);
 

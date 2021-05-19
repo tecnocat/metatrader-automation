@@ -10,6 +10,7 @@ use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
 use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\Entity\SaveEntityEvent;
+use App\Metatrader\Automation\Event\Metatrader\BuildMetatraderConfigEvent;
 use App\Metatrader\Automation\Event\Metatrader\MetatraderExecutionEvent;
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
@@ -39,7 +40,7 @@ class MetatraderSubscriber extends AbstractEventSubscriber
             $lastBacktestReport = $event->getBacktestEntity()->getLastBacktestReport();
         }
 
-        foreach ($event->getExpertAdvisor()->getBacktestReportName($event->getBacktestEntity()) as $backtestReportName)
+        foreach ($event->getExpertAdvisor()->generateBacktestReportName($event->getBacktestEntity()) as $backtestReportName)
         {
             if (!isset($continue) && isset($lastBacktestReport) && $lastBacktestReport !== $backtestReportName)
             {
@@ -58,7 +59,21 @@ class MetatraderSubscriber extends AbstractEventSubscriber
             echo $backtestReportName . ' processing...' . PHP_EOL;
 
             // TODO: Prepare terminal.ini
+            if (empty($terminalConfig = $this->buildMetatraderConfig($event, BuildMetatraderConfigEvent::TERMINAL_CONFIG_TYPE)))
+            {
+                $event->addError('Unable to build the Terminal config');
+
+                return;
+            }
+
             // TODO: Prepare expertAdvisor.ini
+            if (empty($expertAdvisorConfig = $this->buildMetatraderConfig($event, BuildMetatraderConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE)))
+            {
+                $event->addError('Unable to build the Expert Advisor config');
+
+                return;
+            }
+
             // TODO: Tick data suite semaphore
             // TODO: Metatrader instance available
             // TODO: Metatrader backtest launch
@@ -73,10 +88,28 @@ class MetatraderSubscriber extends AbstractEventSubscriber
         }
     }
 
+    private function buildMetatraderConfig(MetatraderExecutionEvent $event, string $type): array
+    {
+        $createMetatraderConfigEvent = new BuildMetatraderConfigEvent($event, $type);
+        $this->dispatch($createMetatraderConfigEvent);
+
+        if ($createMetatraderConfigEvent->hasErrors())
+        {
+            foreach ($createMetatraderConfigEvent->getErrors() as $error)
+            {
+                $event->addError($error);
+            }
+
+            return [];
+        }
+
+        return $createMetatraderConfigEvent->getConfig();
+    }
+
     private function getExpertAdvisorInstance(string $name): AbstractExpertAdvisor
     {
         $class      = AbstractExpertAdvisor::getExpertAdvisorClass($name);
-        $parameters = new ParameterBag($this->containerBag->get('expert_advisors')[$name] ?? []);
+        $parameters = new ParameterBag($this->containerBag->get('metatrader')['expert_advisors'][$name] ?? []);
 
         return new $class($name, $parameters);
     }

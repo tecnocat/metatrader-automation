@@ -2,28 +2,28 @@
 parameters:
   metatrader:
     data_path: C:\Users\Alpha\AppData\Roaming\MetaQuotes\Terminal
-  expert_advisors:
-    Bartolo:
-      active: false
-    Fermin:
-      active: false
-    Prudencio:
-      active: true
-      distance:
-        max: 1000
-        min: 1000
-        step: 50
-      hedging:
-        max: 2000
-        min: 2000
-        step: 50
-      profit:
-        max: 50
-        min: 10
-        step: 10
-      step_months: 12
-    Wilson:
-      active: false
+    expert_advisors:
+      Bartolo:
+        active: false
+      Fermin:
+        active: false
+      Prudencio:
+        active: true
+        distance:
+          max: 1000
+          min: 1000
+          step: 50
+        hedging:
+          max: 2000
+          min: 2000
+          step: 50
+        profit:
+          max: 50
+          min: 10
+          step: 10
+        step_months: 12
+      Wilson:
+        active: false
 services:
   _defaults:
     autoconfigure: true

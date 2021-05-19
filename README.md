@@ -4,6 +4,12 @@ This project born due to the need to run many instances of Metatrader 4 to do an
 Suite enabled, and my first php script was totally destroying the PHP OOP concepts and best practices becoming a big
 monster, and additionally is taken soo long time to do the backtesting because only use one instance of Metatrader 4
 
+I'm best practise's evangelist, I love hexagonal architecture, CQRS, TDD, DDD, Behat, automatic auto-generated tests
+(by code), I like to develop automatic git bots to find and fix many developer mistakes (code, annotations, etc...)
+deny or merge PR, and a lot of funny stuff and very clean code practise, but in this project I don't really need the
+such power to overload of all this good practises, because is just a console scheduler to run a lot of Metatrader 4
+automatic backtests, and I need to set up fast as possible to run and quick develop my Metatrader 4 expert advisors.
+
 ## Installation 🧙
 
 ````bash
@@ -44,13 +50,13 @@ See `config/services.yaml` to set up all the settings for your Expert Advisors a
 parameters:
   metatrader:
     data_path: C:\Path\To\Data\Directory # Usually C:\Users\You\AppData\Roaming\MetaQuotes\Terminal
-  expert_advisors:
-    YourExpertAdvisorName:
-      active: true # Required
-      limit: 10
-    AnotherExpertAdvisorName:
-      active: false # Required
-      foo: bar
+    expert_advisors:
+      YourExpertAdvisorName:
+        active: true # Required
+        limit: 10
+      AnotherExpertAdvisorName:
+        active: false # Required
+        foo: bar
 ````
 
 ### PHP Expert Advisor implementation 🤖
@@ -66,16 +72,38 @@ use App\Metatrader\Automation\Interfaces\EntityInterface;
 
 class YourExpertAdvisorName extends AbstractExpertAdvisor
 {
-    public function getBacktestReportName(EntityInterface $backtestEntity): \Generator
+    public function generateBacktestReportName(EntityInterface $backtestEntity): \Generator
     {
         // You can fetch Expert Advisor parameters calling $this->getParameters() 
         $limit = $this->getParameters()->get('limit');
 
         // Your iteration logic to generate a unique backtest report name
-        for ($i = 1; $i <= $limit; $i++)
+        for ($iteration = 1; $iteration <= $limit; $iteration++)
         {
-            yield "some-unique-name-for-report-based-on-some-parameters-$i.html";
+            // Generate a unique name to store the backtest report when Metatrader 4 ends
+            $backtestReportName      = "unique-name-based-on-parameters-$iteration.html";
+            $currentBacktestSettings = [
+                // Inputs for your Metatrader Expert Advisor (require an alias to handle)
+                // Can be more, is for any of the "input int InputIteration = 1;" on .ex4
+                'iteration'          => $iteration,
+
+                // Backtest report name to let Metatrader where must be saved
+                'backtestReportName' => $backtestReportName,
+            ];
+
+            // Never forget to store current iteration settings to save later in configs
+            $this->setCurrentBacktestSettings($currentBacktestSettings);
+
+            yield $backtestReportName;
         }
+    }
+
+    public function getAlias(): array
+    {
+        return [
+            // PHP name     MT4 EA name (.ex4)
+            'iteration' => 'InputIteration',
+        ];
     }
 }
 ````

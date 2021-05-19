@@ -77,7 +77,7 @@ class Prudencio extends AbstractExpertAdvisor
     public function getAlias(): array
     {
         return [
-            // PHP name    MT4 EA name
+            // PHP name    MT4 EA name (.ex4)
             'logLevel'  => 'LogLevel',
             'distance'  => 'Distancia',
             'hedging'   => 'Cobertura',

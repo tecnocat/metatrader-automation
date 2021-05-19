@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
 {
     protected const METATRADER_DATE_FORMAT = 'Y.m.d';
-
+    private array        $currentBacktestSettings;
     private string       $name;
     private ParameterBag $parameters;
 
@@ -18,6 +18,16 @@ abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
     {
         $this->name       = $name;
         $this->parameters = $parameters;
+    }
+
+    public function getCurrentBacktestSettings(): array
+    {
+        return $this->currentBacktestSettings;
+    }
+
+    final public function setCurrentBacktestSettings(array $currentBacktestSettings): void
+    {
+        $this->currentBacktestSettings = $currentBacktestSettings;
     }
 
     final public static function getExpertAdvisorClass(string $expertAdvisorName): string

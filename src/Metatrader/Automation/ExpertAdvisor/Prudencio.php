@@ -8,7 +8,7 @@ use App\Metatrader\Automation\Interfaces\EntityInterface;
 
 class Prudencio extends AbstractExpertAdvisor
 {
-    public function getBacktestReportName(EntityInterface $backtestEntity): \Generator
+    public function generateBacktestReportName(EntityInterface $backtestEntity): \Generator
     {
         $fromDate     = clone $backtestEntity->getFrom();
         $toDate       = $backtestEntity->getTo();
@@ -45,7 +45,21 @@ class Prudencio extends AbstractExpertAdvisor
 
                     while ($distance <= $distanceData['max'])
                     {
-                        yield "$period-$from-$to-d$distance-h$hedging-l$loss-p$profit-i$increment.html";
+                        $backtestReportName      = "$period-$from-$to-d$distance-h$hedging-l$loss-p$profit-i$increment.html";
+                        $currentBacktestSettings = [
+                            'period'             => $period,
+                            'from'               => $from,
+                            'to'                 => $to,
+                            'distance'           => $distance,
+                            'hedging'            => $hedging,
+                            'loss'               => $loss,
+                            'profit'             => $profit,
+                            'increment'          => $increment,
+                            'backtestReportName' => $backtestReportName,
+                        ];
+                        $this->setCurrentBacktestSettings($currentBacktestSettings);
+
+                        yield $backtestReportName;
 
                         $distance = $distance + $distanceData['step'];
                     }
@@ -58,5 +72,19 @@ class Prudencio extends AbstractExpertAdvisor
 
             $fromDate->modify('+1 month');
         }
+    }
+
+    public function getAlias(): array
+    {
+        return [
+            // PHP name    MT4 EA name
+            'logLevel'  => 'LogLevel',
+            'distance'  => 'Distancia',
+            'hedging'   => 'Cobertura',
+            'loss'      => 'Perdida',
+            'profit'    => 'Beneficio',
+            'increment' => 'Exponencial',
+            'multiply'  => 'Multiplicador',
+        ];
     }
 }

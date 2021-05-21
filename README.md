@@ -138,3 +138,4 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Expert Advisor iterator for each available backtest settings
 * Form builder and helper to handle dynamic forms based on entities
 * Command to import already executed Metatrader backtest reports
+* Clean the Kernel and move the logic to isolated Compiler pass

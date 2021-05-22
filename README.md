@@ -110,7 +110,7 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 
 ## Development information 🐙
 
-#### Currently development 🔥
+#### Current development 🔥
 
 * Find on data folder for installed Metatrader 4 instances and launch
 * Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
@@ -124,6 +124,8 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Analyze database to allow relaunch the already executed tests
 * May be store backtest report image in the database or folder
 * Put Expert Advisor input parameters inside class as properties
+* Backtest report names must include deposit or remove period dates
+* Auto improve parameters for expert advisor reading stored backtests
 
 #### Known bugs 🐞
 

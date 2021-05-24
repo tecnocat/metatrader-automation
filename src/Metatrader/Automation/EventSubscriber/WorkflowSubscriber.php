@@ -119,10 +119,17 @@ class WorkflowSubscriber extends AbstractEventSubscriber
 
     private function findTerminal(ExecutionEvent $event): bool
     {
-        $findTerminalEvent = new FindTerminalEvent($event, $this->containerBag->get('metatrader.data_path'));
+        $findTerminalEvent = new FindTerminalEvent($event, $this->containerBag->get('metatrader')['data_path'] ?? '');
         $this->dispatch($findTerminalEvent);
 
-        return $findTerminalEvent->isFound();
+        if ($findTerminalEvent->isFound())
+        {
+            $event->setTerminalDTO($findTerminalEvent->getTerminalDTO());
+
+            return true;
+        }
+
+        return false;
     }
 
     private function getExpertAdvisorInstance(string $name): AbstractExpertAdvisor

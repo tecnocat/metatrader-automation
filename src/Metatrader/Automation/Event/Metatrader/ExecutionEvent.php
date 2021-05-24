@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Event\Metatrader;
 
+use App\Metatrader\Automation\DTO\TerminalDTO;
 use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
 use App\Metatrader\Automation\Event\AbstractEvent;
@@ -14,6 +15,7 @@ class ExecutionEvent extends AbstractEvent
     private BacktestEntity         $backtestEntity;
     private BacktestReportEntity   $backtestReportEntity;
     private ExpertAdvisorInterface $expertAdvisor;
+    private TerminalDTO            $terminalDTO;
 
     public function __construct(BacktestEntity $backtestEntity)
     {
@@ -48,5 +50,15 @@ class ExecutionEvent extends AbstractEvent
     public function setExpertAdvisor(ExpertAdvisorInterface $expertAdvisor): void
     {
         $this->expertAdvisor = $expertAdvisor;
+    }
+
+    public function getTerminalDTO(): TerminalDTO
+    {
+        return $this->terminalDTO;
+    }
+
+    public function setTerminalDTO(TerminalDTO $terminalDTO): void
+    {
+        $this->terminalDTO = $terminalDTO;
     }
 }

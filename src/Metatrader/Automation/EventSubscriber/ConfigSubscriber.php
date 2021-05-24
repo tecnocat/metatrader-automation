@@ -6,7 +6,7 @@ namespace App\Metatrader\Automation\EventSubscriber;
 
 use App\Metatrader\Automation\Annotation\Dependency;
 use App\Metatrader\Automation\Annotation\Subscriber;
-use App\Metatrader\Automation\Event\Metatrader\BuildMetatraderConfigEvent;
+use App\Metatrader\Automation\Event\Metatrader\BuildConfigEvent;
 use App\Metatrader\Automation\Helper\ConfigHelper;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 
@@ -22,16 +22,16 @@ class ConfigSubscriber extends AbstractEventSubscriber
      */
     public ContainerBagInterface $containerBag;
 
-    public function onCreateMetatraderConfigEvent(BuildMetatraderConfigEvent $event): void
+    public function onCreateMetatraderConfigEvent(BuildConfigEvent $event): void
     {
         switch ($event->getType())
         {
-            case BuildMetatraderConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE:
+            case BuildConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE:
                 $event->setConfig($this->getExpertAdvisorConfig($event));
 
                 break;
 
-            case BuildMetatraderConfigEvent::TERMINAL_CONFIG_TYPE:
+            case BuildConfigEvent::TERMINAL_CONFIG_TYPE:
                 $event->setConfig($this->getTerminalConfig($event));
 
                 break;
@@ -41,12 +41,12 @@ class ConfigSubscriber extends AbstractEventSubscriber
         }
     }
 
-    private function getExpertAdvisorConfig(BuildMetatraderConfigEvent $event): array
+    private function getExpertAdvisorConfig(BuildConfigEvent $event): array
     {
         $config = [
             'common' => [
                 'positions' => '2',
-                'deposit'   => $event->getEvent()->getBacktestEntity()->getDeposit(),
+                'deposit'   => $event->getExecutionEvent()->getBacktestEntity()->getDeposit(),
                 'currency'  => 'EUR',
                 'fitnes'    => '0',
                 'genetic'   => '1',
@@ -72,13 +72,13 @@ class ConfigSubscriber extends AbstractEventSubscriber
             ],
         ];
 
-        return ConfigHelper::fillExpertAdvisorInputs($config, $event->getEvent()->getExpertAdvisor());
+        return ConfigHelper::fillExpertAdvisorInputs($config, $event->getExecutionEvent()->getExpertAdvisor());
     }
 
-    private function getTerminalConfig(BuildMetatraderConfigEvent $event): array
+    private function getTerminalConfig(BuildConfigEvent $event): array
     {
-        $backtestEntity = $event->getEvent()->getBacktestEntity();
-        $expertAdvisor  = $event->getEvent()->getExpertAdvisor();
+        $backtestEntity = $event->getExecutionEvent()->getBacktestEntity();
+        $expertAdvisor  = $event->getExecutionEvent()->getExpertAdvisor();
         $parameters     = $this->containerBag->get('metatrader');
 
         return [

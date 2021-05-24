@@ -9,7 +9,7 @@ use App\Metatrader\Automation\Entity\BacktestReportEntity;
 use App\Metatrader\Automation\Event\AbstractEvent;
 use App\Metatrader\Automation\Interfaces\ExpertAdvisorInterface;
 
-class MetatraderExecutionEvent extends AbstractEvent
+class ExecutionEvent extends AbstractEvent
 {
     private BacktestEntity         $backtestEntity;
     private BacktestReportEntity   $backtestReportEntity;

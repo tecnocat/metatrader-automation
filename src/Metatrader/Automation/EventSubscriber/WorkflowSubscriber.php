@@ -10,8 +10,9 @@ use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
 use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\Entity\SaveEntityEvent;
-use App\Metatrader\Automation\Event\Metatrader\BuildMetatraderConfigEvent;
-use App\Metatrader\Automation\Event\Metatrader\MetatraderExecutionEvent;
+use App\Metatrader\Automation\Event\Metatrader\BuildConfigEvent;
+use App\Metatrader\Automation\Event\Metatrader\ExecutionEvent;
+use App\Metatrader\Automation\Event\Metatrader\FindTerminalEvent;
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -19,14 +20,14 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 /**
  * @Subscriber
  */
-class MetatraderSubscriber extends AbstractEventSubscriber
+class WorkflowSubscriber extends AbstractEventSubscriber
 {
     /**
      * @Dependency
      */
     public ContainerBagInterface $containerBag;
 
-    public function onMetatraderExecutionEvent(MetatraderExecutionEvent $event): void
+    public function onExecutionEvent(ExecutionEvent $event): void
     {
         if (!$this->isActiveExpertAdvisor($event))
         {
@@ -51,15 +52,25 @@ class MetatraderSubscriber extends AbstractEventSubscriber
 
             if ($this->isFoundBacktestReportEntity($event, $backtestReportName))
             {
+                // TODO: Remove this direct output or change to output event
                 echo $backtestReportName . ' already executed, skip...' . PHP_EOL;
 
                 continue;
             }
 
+            // TODO: Remove this direct output or change to output event
             echo $backtestReportName . ' processing...' . PHP_EOL;
 
+            // TODO: Metatrader instance available
+            if (!$this->findTerminal($event))
+            {
+                $event->addError('Unable to find free Terminal');
+
+                return;
+            }
+
             // TODO: Prepare terminal.ini
-            if (empty($terminalConfig = $this->buildMetatraderConfig($event, BuildMetatraderConfigEvent::TERMINAL_CONFIG_TYPE)))
+            if (!$this->buildConfig($event, BuildConfigEvent::TERMINAL_CONFIG_TYPE))
             {
                 $event->addError('Unable to build the Terminal config');
 
@@ -67,7 +78,7 @@ class MetatraderSubscriber extends AbstractEventSubscriber
             }
 
             // TODO: Prepare expertAdvisor.ini
-            if (empty($expertAdvisorConfig = $this->buildMetatraderConfig($event, BuildMetatraderConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE)))
+            if (!$this->buildConfig($event, BuildConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE))
             {
                 $event->addError('Unable to build the Expert Advisor config');
 
@@ -75,7 +86,6 @@ class MetatraderSubscriber extends AbstractEventSubscriber
             }
 
             // TODO: Tick data suite semaphore
-            // TODO: Metatrader instance available
             // TODO: Metatrader backtest launch
             // TODO: Save backtest report to database
 
@@ -88,22 +98,31 @@ class MetatraderSubscriber extends AbstractEventSubscriber
         }
     }
 
-    private function buildMetatraderConfig(MetatraderExecutionEvent $event, string $type): array
+    private function buildConfig(ExecutionEvent $event, string $type): bool
     {
-        $createMetatraderConfigEvent = new BuildMetatraderConfigEvent($event, $type);
-        $this->dispatch($createMetatraderConfigEvent);
+        $buildConfigEvent = new BuildConfigEvent($event, $type);
+        $this->dispatch($buildConfigEvent);
 
-        if ($createMetatraderConfigEvent->hasErrors())
+        if ($buildConfigEvent->hasErrors())
         {
-            foreach ($createMetatraderConfigEvent->getErrors() as $error)
+            foreach ($buildConfigEvent->getErrors() as $error)
             {
                 $event->addError($error);
             }
 
-            return [];
+            return false;
         }
 
-        return $createMetatraderConfigEvent->getConfig();
+        // TODO: Add config files to the MetatraderTerminalDTO
+        return true;
+    }
+
+    private function findTerminal(ExecutionEvent $event): bool
+    {
+        $findTerminalEvent = new FindTerminalEvent($event, $this->containerBag->get('metatrader.data_path'));
+        $this->dispatch($findTerminalEvent);
+
+        return $findTerminalEvent->isFound();
     }
 
     private function getExpertAdvisorInstance(string $name): AbstractExpertAdvisor
@@ -114,14 +133,14 @@ class MetatraderSubscriber extends AbstractEventSubscriber
         return new $class($name, $parameters);
     }
 
-    private function isActiveExpertAdvisor(MetatraderExecutionEvent $event): bool
+    private function isActiveExpertAdvisor(ExecutionEvent $event): bool
     {
         $event->setExpertAdvisor($this->getExpertAdvisorInstance($event->getBacktestEntity()->getExpertAdvisor()));
 
         return $event->getExpertAdvisor()->isActive();
     }
 
-    private function isFoundBacktestEntity(MetatraderExecutionEvent $event): bool
+    private function isFoundBacktestEntity(ExecutionEvent $event): bool
     {
         $criteria        = ['name' => $event->getBacktestEntity()->getName()];
         $findEntityEvent = new FindEntityEvent(BacktestEntity::class, $criteria);
@@ -139,8 +158,9 @@ class MetatraderSubscriber extends AbstractEventSubscriber
         return false;
     }
 
-    private function isFoundBacktestReportEntity(MetatraderExecutionEvent $event, string $backtestReportName): bool
+    private function isFoundBacktestReportEntity(ExecutionEvent $event, string $backtestReportName): bool
     {
+        // TODO: Backtest report name must be a valid unique identifier by itself
         $criteria        = [
             'name'           => $backtestReportName,
             'expertAdvisor'  => $event->getExpertAdvisor()->getName(),
@@ -154,7 +174,7 @@ class MetatraderSubscriber extends AbstractEventSubscriber
         return $findEntityEvent->isFound();
     }
 
-    private function isSavedEntity(MetatraderExecutionEvent $event): bool
+    private function isSavedEntity(ExecutionEvent $event): bool
     {
         $saveEntityEvent = new SaveEntityEvent($event->getBacktestEntity());
         $this->dispatch($saveEntityEvent);

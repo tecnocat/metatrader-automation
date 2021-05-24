@@ -6,19 +6,19 @@ namespace App\Metatrader\Automation\Event\Metatrader;
 
 use App\Metatrader\Automation\Event\AbstractEvent;
 
-class BuildMetatraderConfigEvent extends AbstractEvent
+class BuildConfigEvent extends AbstractEvent
 {
     public const TERMINAL_CONFIG_TYPE       = 'terminal.ini';
     public const EXPERT_ADVISOR_CONFIG_TYPE = 'expert-advisor.ini';
 
-    private array                    $config;
-    private MetatraderExecutionEvent $event;
-    private string                   $type;
+    private array          $config;
+    private ExecutionEvent $executionEvent;
+    private string         $type;
 
-    public function __construct(MetatraderExecutionEvent $event, string $type)
+    public function __construct(ExecutionEvent $executionEvent, string $type)
     {
-        $this->event = $event;
-        $this->type  = $type;
+        $this->executionEvent = $executionEvent;
+        $this->type           = $type;
     }
 
     public function getConfig(): array
@@ -31,9 +31,9 @@ class BuildMetatraderConfigEvent extends AbstractEvent
         $this->config = $config;
     }
 
-    public function getEvent(): MetatraderExecutionEvent
+    public function getExecutionEvent(): ExecutionEvent
     {
-        return $this->event;
+        return $this->executionEvent;
     }
 
     public function getType(): string

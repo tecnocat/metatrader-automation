@@ -6,7 +6,7 @@ namespace App\Metatrader\Automation\Command;
 
 use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Event\Entity\BuildEntityEvent;
-use App\Metatrader\Automation\Event\Metatrader\MetatraderExecutionEvent;
+use App\Metatrader\Automation\Event\Metatrader\ExecutionEvent;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 
@@ -56,10 +56,10 @@ class MetatraderBacktestGenerateCommand extends AbstractCommand
         $this->comment('Executing Metatrader Automation...');
         $this->table($headers, $rows);
 
-        $metatraderExecutionEvent = new MetatraderExecutionEvent($entity);
-        $this->dispatch($metatraderExecutionEvent);
+        $executionEvent = new ExecutionEvent($entity);
+        $this->dispatch($executionEvent);
 
-        if ($this->hasErrors($metatraderExecutionEvent))
+        if ($this->hasErrors($executionEvent))
         {
             return Command::FAILURE;
         }

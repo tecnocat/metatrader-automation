@@ -126,6 +126,7 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Put Expert Advisor input parameters inside class as properties
 * Backtest report names must include deposit or remove period dates
 * Auto improve parameters for expert advisor reading stored backtests
+* Refactor every class object / entity to a Data Transfer Object
 
 #### Known bugs 🐞
 

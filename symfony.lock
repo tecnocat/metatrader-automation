@@ -228,6 +228,9 @@
     "sebastian/version": {
         "version": "3.0.2"
     },
+    "spatie/data-transfer-object": {
+        "version": "2.8.3"
+    },
     "symfony/cache": {
         "version": "v5.2.6"
     },

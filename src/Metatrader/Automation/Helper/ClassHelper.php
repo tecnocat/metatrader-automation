@@ -6,6 +6,8 @@ namespace App\Metatrader\Automation\Helper;
 
 class ClassHelper
 {
+    private static array $cache = [];
+
     public static function copyFields(object $source, object $target): void
     {
         foreach (self::getProperties($source) as $property)
@@ -33,7 +35,7 @@ class ClassHelper
      */
     public static function getClassName($class): string
     {
-        return self::getReflection($class)->getShortName();
+        return self::getCache(__FUNCTION__, $class) ?: self::setCache(__FUNCTION__, $class, self::getReflection($class)->getShortName());
     }
 
     /**
@@ -41,7 +43,7 @@ class ClassHelper
      */
     public static function getClassNameCamelCase($class): string
     {
-        return self::toCamelCase(self::getClassName($class));
+        return self::getCache(__FUNCTION__, $class) ?: self::setCache(__FUNCTION__, $class, self::toCamelCase(self::getClassName($class)));
     }
 
     /**
@@ -49,7 +51,7 @@ class ClassHelper
      */
     public static function getClassNameColon($class): string
     {
-        return self::getClassNameGlue($class, ':');
+        return self::getCache(__FUNCTION__, $class) ?: self::setCache(__FUNCTION__, $class, self::getClassNameGlue($class, ':'));
     }
 
     /**
@@ -57,7 +59,7 @@ class ClassHelper
      */
     public static function getClassNameDash($class): string
     {
-        return self::getClassNameGlue($class, '-');
+        return self::getCache(__FUNCTION__, $class) ?: self::setCache(__FUNCTION__, $class, self::getClassNameGlue($class, '-'));
     }
 
     /**
@@ -65,7 +67,7 @@ class ClassHelper
      */
     public static function getClassNameDot($class): string
     {
-        return self::getClassNameGlue($class, '.');
+        return self::getCache(__FUNCTION__, $class) ?: self::setCache(__FUNCTION__, $class, self::getClassNameGlue($class, '.'));
     }
 
     /**
@@ -73,7 +75,7 @@ class ClassHelper
      */
     public static function getClassNameUnderscore($class): string
     {
-        return self::getClassNameGlue($class, '_');
+        return self::getCache(__FUNCTION__, $class) ?: self::setCache(__FUNCTION__, $class, self::getClassNameGlue($class, '_'));
     }
 
     /**
@@ -81,19 +83,26 @@ class ClassHelper
      */
     public static function getProperties($class): array
     {
-        return self::getReflection($class)->getProperties();
+        return self::getCache(__FUNCTION__, $class) ?: self::setCache(__FUNCTION__, $class, self::getReflection($class)->getProperties());
     }
 
     public static function getPropertyType($class, string $name): string
     {
+        $cacheKey = (is_object($class) ? get_class($class) : $class) . '->' . $name;
+
+        if ($cache = self::getCache(__FUNCTION__, $cacheKey))
+        {
+            return $cache;
+        }
+
         $property = self::getProperty($class, $name);
 
         if ($property->hasType())
         {
-            return $property->getType()->getName();
+            return self::setCache(__FUNCTION__, $cacheKey, $property->getType()->getName());
         }
 
-        return 'string';
+        return self::setCache(__FUNCTION__, $cacheKey, 'string');
     }
 
     public static function getPropertyValue(object $object, string $name)
@@ -120,7 +129,9 @@ class ClassHelper
      */
     public static function hasProperty($class, string $name): bool
     {
-        return self::getReflection($class)->hasProperty($name);
+        $cacheKey = (is_object($class) ? get_class($class) : $class) . '->' . $name;
+
+        return self::getCache(__FUNCTION__, $cacheKey) ?: self::setCache(__FUNCTION__, $cacheKey, self::getReflection($class)->hasProperty($name));
     }
 
     /**
@@ -145,27 +156,27 @@ class ClassHelper
 
     public static function toCamelCase(string $name): string
     {
-        return str_replace(' ', '', ucwords(str_replace(['_', '-', '.', ':'], ' ', $name)));
+        return self::getCache(__FUNCTION__, $name) ?: self::setCache(__FUNCTION__, $name, str_replace(' ', '', ucwords(str_replace(['_', '-', '.', ':'], ' ', $name))));
     }
 
     public static function toColon(string $name): string
     {
-        return self::formulae(self::toCamelCase($name), ':');
+        return self::getCache(__FUNCTION__, $name) ?: self::setCache(__FUNCTION__, $name, self::formulae(self::toCamelCase($name), ':'));
     }
 
     public static function toDash(string $name): string
     {
-        return self::formulae(self::toCamelCase($name), '-');
+        return self::getCache(__FUNCTION__, $name) ?: self::setCache(__FUNCTION__, $name, self::formulae(self::toCamelCase($name), '-'));
     }
 
     public static function toDot(string $name): string
     {
-        return self::formulae(self::toCamelCase($name), '.');
+        return self::getCache(__FUNCTION__, $name) ?: self::setCache(__FUNCTION__, $name, self::formulae(self::toCamelCase($name), '.'));
     }
 
     public static function toUnderscore(string $name): string
     {
-        return self::formulae(self::toCamelCase($name), '_');
+        return self::getCache(__FUNCTION__, $name) ?: self::setCache(__FUNCTION__, $name, self::formulae(self::toCamelCase($name), '_'));
     }
 
     /**
@@ -213,6 +224,11 @@ class ClassHelper
     /**
      * @param object|string $class
      */
+    private static function getCache(string $index, $class)
+    {
+        return self::$cache[$index][is_object($class) ? get_class($class) : $class] ?? null;
+    }
+
     private static function getClassNameGlue($class, string $glue): string
     {
         return self::formulae(self::getClassName($class), $glue);
@@ -232,5 +248,13 @@ class ClassHelper
     private static function getReflection($class): \ReflectionClass
     {
         return new \ReflectionClass($class);
+    }
+
+    /**
+     * @param object|string $class
+     */
+    private static function setCache(string $index, $class, $value)
+    {
+        return self::$cache[$index][is_object($class) ? get_class($class) : $class] = $value;
     }
 }

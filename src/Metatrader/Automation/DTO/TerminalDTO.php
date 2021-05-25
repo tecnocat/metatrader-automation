@@ -13,11 +13,23 @@ class TerminalDTO extends DTO
     public string $terminalId;
     public string $terminalPath;
     public int    $terminalVersion;
+    private bool  $busy;
+
+    public function __construct(array $parameters = [])
+    {
+        $this->setFree();
+
+        parent::__construct($parameters);
+    }
 
     public function isBusy(): bool
     {
-        // TODO: Check if this instance is running a backtest or not
-        return (bool) rand(0, 10);
+        return $this->busy;
+    }
+
+    public function setBusy(): void
+    {
+        $this->busy = true;
     }
 
     public function isCluster(): bool
@@ -28,5 +40,10 @@ class TerminalDTO extends DTO
     public function isSupported(): bool
     {
         return 4 === $this->terminalVersion;
+    }
+
+    public function setFree(): void
+    {
+        $this->busy = false;
     }
 }

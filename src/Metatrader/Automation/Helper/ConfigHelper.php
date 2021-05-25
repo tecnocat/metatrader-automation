@@ -8,9 +8,23 @@ use App\Metatrader\Automation\Interfaces\ExpertAdvisorInterface;
 
 class ConfigHelper
 {
-    public static function fillExpertAdvisorInputs(array $config, ExpertAdvisorInterface $expertAdvisor): array
+    public const TESTER_CONFIG_PATH = 'tester';
+    public const TESTER_CONFIG_FILE = 'tester.ini';
+
+    public static function getBacktestReportHtmlFile(string $terminalPath, array $currentBacktestSettings, bool $relative = false): string
     {
-        $alias = $expertAdvisor->getAlias();
+        return self::getTerminalFile($terminalPath, $currentBacktestSettings['backtestReportName'], $relative);
+    }
+
+    public static function getExpertAdvisorConfigFile(string $terminalPath, string $expertAdvisorName, bool $relative = false): string
+    {
+        return self::getTerminalFile($terminalPath, $expertAdvisorName . '.ini', $relative);
+    }
+
+    public static function getExpertAdvisorInputs(ExpertAdvisorInterface $expertAdvisor): array
+    {
+        $alias  = $expertAdvisor->getAlias();
+        $inputs = [];
 
         foreach ($expertAdvisor->getCurrentBacktestSettings() as $backtestSettingName => $backtestSettingValue)
         {
@@ -19,40 +33,24 @@ class ConfigHelper
                 continue;
             }
 
-            $config['inputs'][$alias[$backtestSettingName]]        = $backtestSettingValue;
-            $config['inputs'][$alias[$backtestSettingName] . ',F'] = $backtestSettingValue;
-            $config['inputs'][$alias[$backtestSettingName] . ',1'] = $backtestSettingValue;
-            $config['inputs'][$alias[$backtestSettingName] . ',2'] = $backtestSettingValue;
-            $config['inputs'][$alias[$backtestSettingName] . ',3'] = $backtestSettingValue;
+            $inputs[$alias[$backtestSettingName]] = $backtestSettingValue;
         }
 
-        return $config;
+        return $inputs;
     }
 
-    public static function getBacktestReportPath(array $parameters, array $currentBacktestSettings): string
+    public static function getTerminalConfigFile(string $terminalPath, bool $relative = false): string
     {
-        $terminalDataPath   = self::getMainTerminalPath($parameters['data_path']);
-        $backtestReportPath = $terminalDataPath . DIRECTORY_SEPARATOR . $currentBacktestSettings['backtestReportName'];
-
-        return self::getRelativePath($backtestReportPath, $terminalDataPath);
-    }
-
-    public static function getExpertAdvisorPath(array $parameters, string $expertAdvisorName): string
-    {
-        $terminalDataPath  = self::getMainTerminalPath($parameters['data_path']);
-        $expertAdvisorPath = $terminalDataPath . DIRECTORY_SEPARATOR . $expertAdvisorName . '.ini';
-
-        return self::getRelativePath($expertAdvisorPath, $terminalDataPath);
-    }
-
-    private static function getMainTerminalPath(string $dataPath): string
-    {
-        // TODO: Handle dinamically, this is just a test
-        return $dataPath . DIRECTORY_SEPARATOR . '1D1NFAFAFSHBJSAFHBSAJFBHASJHF';
+        return self::getTerminalFile($terminalPath, self::TESTER_CONFIG_FILE, $relative);
     }
 
     private static function getRelativePath(string $fullPath, string $relativePath): string
     {
         return ltrim(str_replace(rtrim($relativePath, DIRECTORY_SEPARATOR), '', $fullPath), DIRECTORY_SEPARATOR);
+    }
+
+    private static function getTerminalFile(string $terminalPath, string $filename, bool $relative): string
+    {
+        return (!$relative ? $terminalPath . DIRECTORY_SEPARATOR : '') . self::TESTER_CONFIG_PATH . DIRECTORY_SEPARATOR . $filename;
     }
 }

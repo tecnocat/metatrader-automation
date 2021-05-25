@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\EventSubscriber;
 
-use App\Metatrader\Automation\Annotation\Dependency;
 use App\Metatrader\Automation\Annotation\Subscriber;
-use App\Metatrader\Automation\Event\Metatrader\BuildConfigEvent;
+use App\Metatrader\Automation\Event\Metatrader\WriteConfigEvent;
 use App\Metatrader\Automation\Helper\ConfigHelper;
-use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @Subscriber
@@ -17,41 +16,39 @@ class ConfigSubscriber extends AbstractEventSubscriber
 {
     private const DATE_FORMAT = 'Y.m.d';
 
-    /**
-     * @Dependency
-     */
-    public ContainerBagInterface $containerBag;
-
-    public function onCreateMetatraderConfigEvent(BuildConfigEvent $event): void
+    public function onWriteConfigEvent(WriteConfigEvent $event): void
     {
         switch ($event->getType())
         {
-            case BuildConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE:
-                $event->setConfig($this->getExpertAdvisorConfig($event));
+            case WriteConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE:
+                $this->writeExpertAdvisorConfig($event);
 
                 break;
 
-            case BuildConfigEvent::TERMINAL_CONFIG_TYPE:
-                $event->setConfig($this->getTerminalConfig($event));
+            case WriteConfigEvent::TESTER_CONFIG_TYPE:
+                $this->writeTerminalConfig($event);
 
                 break;
 
             default:
-                $event->addError('I don\'t know how to build this config type, unknown type ' . $event->getType());
+                $event->addError('I don\'t know how to write this config type, unknown type ' . $event->getType());
         }
     }
 
-    private function getExpertAdvisorConfig(BuildConfigEvent $event): array
+    private function writeExpertAdvisorConfig(WriteConfigEvent $event): void
     {
-        $config = [
+        $backtestEntity = $event->getExecutionEvent()->getBacktestEntity();
+        $expertAdvisor  = $event->getExecutionEvent()->getExpertAdvisor();
+        $terminalDTO    = $event->getExecutionEvent()->getTerminalDTO();
+        $config         = [
             'common' => [
                 'positions' => '2',
-                'deposit'   => $event->getExecutionEvent()->getBacktestEntity()->getDeposit(),
+                'deposit'   => $backtestEntity->getDeposit(),
                 'currency'  => 'EUR',
                 'fitnes'    => '0',
                 'genetic'   => '1',
             ],
-            'inputs' => [],
+            'inputs' => ConfigHelper::getExpertAdvisorInputs($expertAdvisor),
             'limits' => [
                 'balance_enable'         => '0',
                 'balance'                => '200.00',
@@ -72,16 +69,15 @@ class ConfigSubscriber extends AbstractEventSubscriber
             ],
         ];
 
-        return ConfigHelper::fillExpertAdvisorInputs($config, $event->getExecutionEvent()->getExpertAdvisor());
+        self::writeXml(ConfigHelper::getExpertAdvisorConfigFile($terminalDTO->terminalPath, $expertAdvisor->getName()), $config);
     }
 
-    private function getTerminalConfig(BuildConfigEvent $event): array
+    private function writeTerminalConfig(WriteConfigEvent $event): void
     {
         $backtestEntity = $event->getExecutionEvent()->getBacktestEntity();
         $expertAdvisor  = $event->getExecutionEvent()->getExpertAdvisor();
-        $parameters     = $this->containerBag->get('metatrader');
-
-        return [
+        $terminalDTO    = $event->getExecutionEvent()->getTerminalDTO();
+        $config         = [
             '// common' => [
                 'Profile'           => 'default',
                 'AutoConfiguration' => 'true',
@@ -97,7 +93,7 @@ class ConfigSubscriber extends AbstractEventSubscriber
             ],
             '// test'   => [
                 'TestExpert'           => $expertAdvisor->getName(),
-                'TestExpertParameters' => ConfigHelper::getExpertAdvisorPath($parameters, $expertAdvisor->getName()),
+                'TestExpertParameters' => ConfigHelper::getExpertAdvisorConfigFile($terminalDTO->terminalPath, $expertAdvisor->getName(), true),
                 'TestSymbol'           => $backtestEntity->getSymbol(),
                 'TestPeriod'           => $backtestEntity->getPeriod(),
                 'TestModel'            => '0',
@@ -106,11 +102,67 @@ class ConfigSubscriber extends AbstractEventSubscriber
                 'TestDateEnable'       => 'true',
                 'TestFromDate'         => $backtestEntity->getFrom()->format(self::DATE_FORMAT),
                 'TestToDate'           => $backtestEntity->getTo()->format(self::DATE_FORMAT),
-                'TestReport'           => ConfigHelper::getBacktestReportPath($parameters, $expertAdvisor->getCurrentBacktestSettings()),
+                'TestReport'           => ConfigHelper::getBacktestReportHtmlFile($terminalDTO->terminalPath, $expertAdvisor->getCurrentBacktestSettings(), true),
                 'TestReplaceReport'    => 'true',
-                'TestShutdownTerminal' => 'false',
+                'TestShutdownTerminal' => 'true',
                 'TestVisualEnable'     => 'false',
             ],
         ];
+
+        self::writeIni($terminalDTO->terminalConfig, $config);
+    }
+
+    // TODO: Mix with toXml
+    private static function toIni(array $data, bool $deep = false): string
+    {
+        $ini = $deep ? '' : '// Metatrader Automation - Generated on ' . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL;
+
+        foreach ($data as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $ini .= $key . PHP_EOL . self::toIni($value, true);
+
+                continue;
+            }
+
+            $ini .= $key . '=' . $value . PHP_EOL;
+        }
+
+        return $ini . PHP_EOL;
+    }
+
+    // TODO: Mix with toIni
+    private static function toXml(array $data): string
+    {
+        $xml = '';
+
+        foreach ($data as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $xml .= "<$key>" . PHP_EOL . self::toXml($value) . "</$key>" . PHP_EOL . PHP_EOL;
+
+                continue;
+            }
+
+            $xml .= $key . '=' . $value . PHP_EOL;
+        }
+
+        return $xml;
+    }
+
+    // TODO: Fusion with writeXml
+    private static function writeIni(string $filename, array $data): void
+    {
+        $filesystem = new Filesystem();
+        $filesystem->dumpFile($filename, self::toIni($data));
+    }
+
+    // TODO: Fusion with writeIni
+    private static function writeXml(string $filename, array $data): void
+    {
+        $filesystem = new Filesystem();
+        $filesystem->dumpFile($filename, self::toXml($data));
     }
 }

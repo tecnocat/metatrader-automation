@@ -112,13 +112,11 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 
 #### Current development 🔥
 
-* Find on data folder for installed Metatrader 4 instances and launch
-* Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
+* Workflow steps to detect Metatrader 4 instances free to run
 
 #### Next steps ✨
 
 * Cluster generator (copy many instances of main Metatrader 4)
-* Workflow steps to detect Metatrader 4 instances free to run
 * System to handle start / stop of Tick Data Suite during backtest
 * Multiple Expert Advisors and symbols to backtesting at same time
 * Analyze database to allow relaunch the already executed tests
@@ -127,11 +125,14 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Backtest report names must include deposit or remove period dates
 * Auto improve parameters for expert advisor reading stored backtests
 * Refactor every class object / entity to a Data Transfer Object
+* Refactor error handling, pass event to event in a other event
+* Refactor import backtest report and make unnecessary the name
 
 #### Known bugs 🐞
 
 * The import command take too much time between backtest reports
 * Date validator is failing when one of the date fields is empty
+* The minimum range for dates is a month, but script accept any
 
 #### Already done ✔️
 
@@ -142,3 +143,5 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Form builder and helper to handle dynamic forms based on entities
 * Command to import already executed Metatrader backtest reports
 * Clean the Kernel and move the logic to isolated Compiler pass
+* Find on data folder for installed Metatrader 4 instances and launch
+* Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4

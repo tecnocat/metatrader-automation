@@ -10,7 +10,7 @@ use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
 use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\Entity\SaveEntityEvent;
-use App\Metatrader\Automation\Event\Metatrader\BuildConfigEvent;
+use App\Metatrader\Automation\Event\Metatrader\WriteConfigEvent;
 use App\Metatrader\Automation\Event\Metatrader\ExecutionEvent;
 use App\Metatrader\Automation\Event\Metatrader\FindTerminalEvent;
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
@@ -69,8 +69,10 @@ class WorkflowSubscriber extends AbstractEventSubscriber
                 return;
             }
 
+            $terminalDTO = $event->getTerminalDTO();
+
             // TODO: Prepare terminal.ini
-            if (!$this->buildConfig($event, BuildConfigEvent::TERMINAL_CONFIG_TYPE))
+            if (!$this->writeConfig($event, WriteConfigEvent::TESTER_CONFIG_TYPE))
             {
                 $event->addError('Unable to build the Terminal config');
 
@@ -78,7 +80,7 @@ class WorkflowSubscriber extends AbstractEventSubscriber
             }
 
             // TODO: Prepare expertAdvisor.ini
-            if (!$this->buildConfig($event, BuildConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE))
+            if (!$this->writeConfig($event, WriteConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE))
             {
                 $event->addError('Unable to build the Expert Advisor config');
 
@@ -87,6 +89,13 @@ class WorkflowSubscriber extends AbstractEventSubscriber
 
             // TODO: Tick data suite semaphore
             // TODO: Metatrader backtest launch
+
+            // TODO: Sync mode
+            exec(sprintf('"%s" "%s"', $terminalDTO->terminalExe, $terminalDTO->terminalConfig));
+
+            // TODO: Async mode
+            //pclose(popen($debug = sprintf('start /b %s %s', $terminalDTO->terminalExe, $terminalDTO->terminalConfig), 'r'));
+
             // TODO: Save backtest report to database
 
             $event->getBacktestEntity()->setLastBacktestReport($backtestReportName);
@@ -98,14 +107,14 @@ class WorkflowSubscriber extends AbstractEventSubscriber
         }
     }
 
-    private function buildConfig(ExecutionEvent $event, string $type): bool
+    private function writeConfig(ExecutionEvent $event, string $type): bool
     {
-        $buildConfigEvent = new BuildConfigEvent($event, $type);
-        $this->dispatch($buildConfigEvent);
+        $writeConfigEvent = new WriteConfigEvent($event, $type);
+        $this->dispatch($writeConfigEvent);
 
-        if ($buildConfigEvent->hasErrors())
+        if ($writeConfigEvent->hasErrors())
         {
-            foreach ($buildConfigEvent->getErrors() as $error)
+            foreach ($writeConfigEvent->getErrors() as $error)
             {
                 $event->addError($error);
             }
@@ -113,7 +122,6 @@ class WorkflowSubscriber extends AbstractEventSubscriber
             return false;
         }
 
-        // TODO: Add config files to the MetatraderTerminalDTO
         return true;
     }
 
@@ -122,14 +130,7 @@ class WorkflowSubscriber extends AbstractEventSubscriber
         $findTerminalEvent = new FindTerminalEvent($event, $this->containerBag->get('metatrader')['data_path'] ?? '');
         $this->dispatch($findTerminalEvent);
 
-        if ($findTerminalEvent->isFound())
-        {
-            $event->setTerminalDTO($findTerminalEvent->getTerminalDTO());
-
-            return true;
-        }
-
-        return false;
+        return $findTerminalEvent->isFound();
     }
 
     private function getExpertAdvisorInstance(string $name): AbstractExpertAdvisor

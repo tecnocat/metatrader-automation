@@ -31,17 +31,23 @@ class TerminalHelper
         {
             $terminalExe     = self::getTerminalExe(preg_replace('/[[:^print:]]/', '', file_get_contents($file->getPathname())));
             $terminalId      = $file->getRelativePath();
-            $terminalPath    = $dataPath . DIRECTORY_SEPARATOR . $file->getRelativePath();
+            $terminalPath    = dirname($file->getPathname());
+            $terminalConfig  = ConfigHelper::getTerminalConfigFile($terminalPath);
             $terminalVersion = self::getTerminalVersion($terminalPath);
             $terminals[]     = new TerminalDTO(
                 [
-                    'terminalConfig'  => '',
+                    'terminalConfig'  => $terminalConfig,
                     'terminalExe'     => $terminalExe,
                     'terminalId'      => $terminalId,
                     'terminalPath'    => $terminalPath,
                     'terminalVersion' => $terminalVersion,
                 ]
             );
+        }
+
+        if (empty($terminals))
+        {
+            throw new \RuntimeException('Not found any terminal configured in path ' . $dataPath);
         }
 
         return self::$cache[__FUNCTION__][$dataPath] = $terminals;

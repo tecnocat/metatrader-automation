@@ -16,5 +16,6 @@ class TerminalSubscriber extends AbstractEventSubscriber
     public function onFindEvent(FindTerminalEvent $event): void
     {
         $event->setTerminalDTO(TerminalHelper::findOneFree($event->getDataPath()));
+        $event->getExecutionEvent()->setTerminalDTO($event->getTerminalDTO());
     }
 }

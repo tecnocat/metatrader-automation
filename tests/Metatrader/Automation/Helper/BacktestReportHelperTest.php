@@ -50,6 +50,6 @@ class BacktestReportHelperTest extends TestCase
             'averageConsecutiveLosses' => '2',
             'parameters'               => 'a:7:{s:8:"LogLevel";s:1:"1";s:9:"Distancia";s:3:"950";s:13:"Multiplicador";s:1:"1";s:9:"Cobertura";s:4:"2000";s:7:"Perdida";s:4:"4000";s:9:"Beneficio";s:2:"10";s:11:"Exponencial";s:5:"false";}',
         ];
-        static::assertSame($expected, BacktestReportHelper::parseFile(__DIR__ . DIRECTORY_SEPARATOR . 'BacktestReportHelperTestFile.html'));
+        self::assertSame($expected, BacktestReportHelper::parseFile(__DIR__ . DIRECTORY_SEPARATOR . 'BacktestReportHelperTestFile.html'));
     }
 }

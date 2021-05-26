@@ -96,6 +96,6 @@ class BacktestHelperTest extends TestCase
      */
     public function testAddBacktestName(array $data, array $expected): void
     {
-        static::assertSame($expected, BacktestHelper::addBacktestName($data));
+        self::assertSame($expected, BacktestHelper::addBacktestName($data));
     }
 }

@@ -21,7 +21,7 @@ class FormHelperTest extends TestCase
     public function testAddField()
     {
         $formConfigBuilder = $this->createMock(FormConfigBuilderInterface::class);
-        $formConfigBuilder->expects(static::once())->method('addModelTransformer')->with(
+        $formConfigBuilder->expects(self::once())->method('addModelTransformer')->with(
             new CallbackTransformer(
                 function ($value)
                 {
@@ -36,13 +36,13 @@ class FormHelperTest extends TestCase
         ;
 
         $formBuilder = $this->createMock(FormBuilderInterface::class);
-        $formBuilder->expects(static::exactly(7))->method('getDataClass')->willReturn(FormHelperTestObject::class);
-        $formBuilder->expects(static::once())->method('get')->with('items')->willReturn($formConfigBuilder);
-        $formBuilder->expects(static::exactly(7))->method('add')->withConsecutive(
+        $formBuilder->expects(self::exactly(7))->method('getDataClass')->willReturn(FormHelperTestObject::class);
+        $formBuilder->expects(self::once())->method('get')->with('items')->willReturn($formConfigBuilder);
+        $formBuilder->expects(self::exactly(7))->method('add')->withConsecutive(
             [
-                static::equalTo('active'),
-                static::equalTo(CheckboxType::class),
-                static::equalTo(
+                self::equalTo('active'),
+                self::equalTo(CheckboxType::class),
+                self::equalTo(
                     [
                         'false_values' => [
                             '0',
@@ -52,34 +52,34 @@ class FormHelperTest extends TestCase
                 ),
             ],
             [
-                static::equalTo('amount'),
-                static::equalTo(NumberType::class),
-                static::equalTo([]),
+                self::equalTo('amount'),
+                self::equalTo(NumberType::class),
+                self::equalTo([]),
             ],
             [
-                static::equalTo('code'),
-                static::equalTo(TextType::class),
-                static::equalTo([]),
+                self::equalTo('code'),
+                self::equalTo(TextType::class),
+                self::equalTo([]),
             ],
             [
-                static::equalTo('id'),
-                static::equalTo(IntegerType::class),
-                static::equalTo([]),
+                self::equalTo('id'),
+                self::equalTo(IntegerType::class),
+                self::equalTo([]),
             ],
             [
-                static::equalTo('items'),
-                static::equalTo(TextType::class),
-                static::equalTo([]),
+                self::equalTo('items'),
+                self::equalTo(TextType::class),
+                self::equalTo([]),
             ],
             [
-                static::equalTo('name'),
-                static::equalTo(TextType::class),
-                static::equalTo([]),
+                self::equalTo('name'),
+                self::equalTo(TextType::class),
+                self::equalTo([]),
             ],
             [
-                static::equalTo('testedAt'),
-                static::equalTo(DateType::class),
-                static::equalTo(
+                self::equalTo('testedAt'),
+                self::equalTo(DateType::class),
+                self::equalTo(
                     [
                         'format' => 'yyyy-MM-dd',
                         'widget' => 'single_text',
@@ -100,7 +100,7 @@ class FormHelperTest extends TestCase
     public function testGetFormEntityType()
     {
         $expected = 'App\Metatrader\Automation\Form\Type\FormHelperTestType';
-        static::assertSame($expected, FormHelper::getFormEntityType(FormHelperTestObject::class));
+        self::assertSame($expected, FormHelper::getFormEntityType(FormHelperTestObject::class));
     }
 
     public function testSetDefaults()
@@ -111,7 +111,7 @@ class FormHelperTest extends TestCase
             'data_class'         => 'App\Metatrader\Automation\Entity\\' . __NAMESPACE__ . '\FormHelperTestObEntity',
         ];
         $optionsResolver = $this->createMock(OptionsResolver::class);
-        $optionsResolver->expects(static::once())->method('setDefaults')->with(static::equalTo($expected));
+        $optionsResolver->expects(self::once())->method('setDefaults')->with(self::equalTo($expected));
         FormHelper::setDefaults($optionsResolver, FormHelperTestObject::class);
     }
 }

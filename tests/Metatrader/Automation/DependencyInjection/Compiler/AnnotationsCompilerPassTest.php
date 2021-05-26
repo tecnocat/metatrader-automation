@@ -45,7 +45,7 @@ class AnnotationsCompilerPassTest extends TestCase
     public function testProcess(?string $methodCall, ?string $property, ?string $classReference): void
     {
         $definition = $this->createMock(Definition::class);
-        $definition->expects(static::exactly(3))->method('addTag')->with(
+        $definition->expects(self::exactly(3))->method('addTag')->with(
             'kernel.event_listener',
             [
                 'event'  => 'annotations.compiler.pass.test',
@@ -60,52 +60,52 @@ class AnnotationsCompilerPassTest extends TestCase
 
             if (null !== $methodCall)
             {
-                $definition->expects(static::exactly(1))->method('addMethodCall')->with($methodCall, [$reference])->willReturn($definition);
+                $definition->expects(self::exactly(1))->method('addMethodCall')->with($methodCall, [$reference])->willReturn($definition);
             }
             elseif (null !== $property)
             {
-                $definition->expects(static::exactly(2))->method('setProperty')->with($property, $reference)->willReturn($definition);
+                $definition->expects(self::exactly(2))->method('setProperty')->with($property, $reference)->willReturn($definition);
             }
         }
 
         $container = $this->createMock(ContainerBuilder::class);
-        $container->expects(static::exactly(2))->method('getParameter')->withConsecutive(
+        $container->expects(self::exactly(2))->method('getParameter')->withConsecutive(
             [
-                static::equalTo('kernel.project_dir'),
+                self::equalTo('kernel.project_dir'),
             ],
             [
-                static::equalTo('kernel.environment'),
+                self::equalTo('kernel.environment'),
             ]
         )->willReturnOnConsecutiveCalls(
             __DIR__,
             'test',
         )
         ;
-        $container->expects(static::exactly(5))->method('getDefinition')->withConsecutive(
+        $container->expects(self::exactly(5))->method('getDefinition')->withConsecutive(
             [
-                static::equalTo(AnnotationsCompilerPassTestSubscriber::class),
+                self::equalTo(AnnotationsCompilerPassTestSubscriber::class),
             ],
             [
-                static::equalTo(AnnotationsCompilerPassTestMethodCallSubscriber::class),
+                self::equalTo(AnnotationsCompilerPassTestMethodCallSubscriber::class),
             ],
             [
-                static::equalTo(AnnotationsCompilerPassTestPropertySubscriber::class),
+                self::equalTo(AnnotationsCompilerPassTestPropertySubscriber::class),
             ],
             [
-                static::equalTo(AnnotationsCompilerPassTestException::class),
+                self::equalTo(AnnotationsCompilerPassTestException::class),
             ],
             [
-                static::equalTo(AnnotationsCompilerPassTestPropertyExceptionSubscriber::class),
+                self::equalTo(AnnotationsCompilerPassTestPropertyExceptionSubscriber::class),
             ],
         )->willReturnOnConsecutiveCalls(
             $definition,
             $definition,
             $definition,
-            static::throwException(new ServiceNotFoundException(AnnotationsCompilerPassTestException::class)),
+            self::throwException(new ServiceNotFoundException(AnnotationsCompilerPassTestException::class)),
             $definition,
         )
         ;
-        static::expectException(\RuntimeException::class);
+        self::expectException(\RuntimeException::class);
 
         $annotationsCompilerPass = new AnnotationsCompilerPass();
         $annotationsCompilerPass->process($container);

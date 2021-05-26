@@ -97,10 +97,10 @@ class ClassHelperTest extends TestCase
         $classHelperTestObjectSource = new ClassHelperTestObjectSource($dateTime);
         $classHelperTestObjectTarget = new ClassHelperTestObjectTarget($dateTime);
         ClassHelper::copyFields($classHelperTestObjectSource, $classHelperTestObjectTarget);
-        static::assertClassHasAttribute('onlyInSource', get_class($classHelperTestObjectSource));
-        static::assertClassHasAttribute('onlyInTarget', get_class($classHelperTestObjectTarget));
-        static::assertClassNotHasAttribute('onlyInTarget', get_class($classHelperTestObjectSource));
-        static::assertClassNotHasAttribute('onlyInSource', get_class($classHelperTestObjectTarget));
+        self::assertClassHasAttribute('onlyInSource', get_class($classHelperTestObjectSource));
+        self::assertClassHasAttribute('onlyInTarget', get_class($classHelperTestObjectTarget));
+        self::assertClassNotHasAttribute('onlyInTarget', get_class($classHelperTestObjectSource));
+        self::assertClassNotHasAttribute('onlyInSource', get_class($classHelperTestObjectTarget));
     }
 
     public function testCopyFields(): void
@@ -113,7 +113,7 @@ class ClassHelperTest extends TestCase
         ClassHelper::copyFields($classHelperTestObjectSource, $classHelperTestObjectTarget);
         $sourcePropertyValues = ClassHelper::getPropertyValues($classHelperTestObjectSource);
         $targetPropertyValues = ClassHelper::getPropertyValues($classHelperTestObjectTarget);
-        static::assertSame($sourcePropertyValues, $targetPropertyValues);
+        self::assertSame($sourcePropertyValues, $targetPropertyValues);
     }
 
     public function testGetClassName(): void
@@ -121,32 +121,32 @@ class ClassHelperTest extends TestCase
         $entityMock = $this->createMock(ClassHelper::class);
         $expected   = basename(get_class($entityMock));
 
-        static::assertSame($expected, ClassHelper::getClassName($entityMock));
+        self::assertSame($expected, ClassHelper::getClassName($entityMock));
     }
 
     public function testGetClassNameCamelCase(): void
     {
-        static::assertSame('StdClass', ClassHelper::getClassNameCamelCase(new \stdClass()));
+        self::assertSame('StdClass', ClassHelper::getClassNameCamelCase(new \stdClass()));
     }
 
     public function testGetClassNameColon(): void
     {
-        static::assertSame('std:class', ClassHelper::getClassNameColon(new \stdClass()));
+        self::assertSame('std:class', ClassHelper::getClassNameColon(new \stdClass()));
     }
 
     public function testGetClassNameDash(): void
     {
-        static::assertSame('std-class', ClassHelper::getClassNameDash(new \stdClass()));
+        self::assertSame('std-class', ClassHelper::getClassNameDash(new \stdClass()));
     }
 
     public function testGetClassNameDot(): void
     {
-        static::assertSame('std.class', ClassHelper::getClassNameDot(new \stdClass()));
+        self::assertSame('std.class', ClassHelper::getClassNameDot(new \stdClass()));
     }
 
     public function testGetClassNameUnderscore(): void
     {
-        static::assertSame('std_class', ClassHelper::getClassNameUnderscore(new \stdClass()));
+        self::assertSame('std_class', ClassHelper::getClassNameUnderscore(new \stdClass()));
     }
 
     public function testGetProperties(): void
@@ -162,7 +162,7 @@ class ClassHelperTest extends TestCase
             return $property->getName();
         };
 
-        static::assertSame($expected, array_map($callback, ClassHelper::getProperties($classHelperTestObject)));
+        self::assertSame($expected, array_map($callback, ClassHelper::getProperties($classHelperTestObject)));
     }
 
     public function testGetPropertyValue(): void
@@ -171,9 +171,9 @@ class ClassHelperTest extends TestCase
         $id     = rand(1, 9999);
         $name   = 'test';
         $object = $this->getClassHelperTestObject($code, $id, $name);
-        static::assertSame($id, ClassHelper::getPropertyValue($object, 'id'));
-        static::assertSame($name, ClassHelper::getPropertyValue($object, 'name'));
-        static::assertSame($code, ClassHelper::getPropertyValue($object, 'code'));
+        self::assertSame($id, ClassHelper::getPropertyValue($object, 'id'));
+        self::assertSame($name, ClassHelper::getPropertyValue($object, 'name'));
+        self::assertSame($code, ClassHelper::getPropertyValue($object, 'code'));
     }
 
     public function testGetPropertyValues(): void
@@ -187,16 +187,16 @@ class ClassHelperTest extends TestCase
             'name' => $name,
         ];
         $object = $this->getClassHelperTestObject($code, $id, $name);
-        static::assertSame($values, ClassHelper::getPropertyValues($object));
+        self::assertSame($values, ClassHelper::getPropertyValues($object));
     }
 
     public function testHasProperty(): void
     {
         $classHelperTestObject = new ClassHelperTestObject();
-        static::assertTrue(ClassHelper::hasProperty($classHelperTestObject, 'code'));
-        static::assertTrue(ClassHelper::hasProperty($classHelperTestObject, 'id'));
-        static::assertTrue(ClassHelper::hasProperty($classHelperTestObject, 'name'));
-        static::assertFalse(ClassHelper::hasProperty($classHelperTestObject, 'test'));
+        self::assertTrue(ClassHelper::hasProperty($classHelperTestObject, 'code'));
+        self::assertTrue(ClassHelper::hasProperty($classHelperTestObject, 'id'));
+        self::assertTrue(ClassHelper::hasProperty($classHelperTestObject, 'name'));
+        self::assertFalse(ClassHelper::hasProperty($classHelperTestObject, 'test'));
     }
 
     public function testSetPropertyValue(): void
@@ -211,7 +211,7 @@ class ClassHelperTest extends TestCase
         ClassHelper::setPropertyValue($classHelperTestObjectTarget, 'name', $name);
         $sourcePropertyValues = ClassHelper::getPropertyValues($classHelperTestObjectSource);
         $targetPropertyValues = ClassHelper::getPropertyValues($classHelperTestObjectTarget);
-        static::assertSame($sourcePropertyValues, $targetPropertyValues);
+        self::assertSame($sourcePropertyValues, $targetPropertyValues);
     }
 
     public function testSetPropertyValues(): void
@@ -229,7 +229,7 @@ class ClassHelperTest extends TestCase
         ClassHelper::setPropertyValues($classHelperTestObjectTarget, $values);
         $sourcePropertyValues = ClassHelper::getPropertyValues($classHelperTestObjectSource);
         $targetPropertyValues = ClassHelper::getPropertyValues($classHelperTestObjectTarget);
-        static::assertSame($sourcePropertyValues, $targetPropertyValues);
+        self::assertSame($sourcePropertyValues, $targetPropertyValues);
     }
 
     /**
@@ -237,7 +237,7 @@ class ClassHelperTest extends TestCase
      */
     public function testToCamelCase(string $class, string $expected): void
     {
-        static::assertSame($expected, ClassHelper::toCamelCase($class));
+        self::assertSame($expected, ClassHelper::toCamelCase($class));
     }
 
     /**
@@ -245,7 +245,7 @@ class ClassHelperTest extends TestCase
      */
     public function testToColon(string $class, string $expected): void
     {
-        static::assertSame($expected, ClassHelper::toColon($class));
+        self::assertSame($expected, ClassHelper::toColon($class));
     }
 
     /**
@@ -253,7 +253,7 @@ class ClassHelperTest extends TestCase
      */
     public function testToDash(string $class, string $expected): void
     {
-        static::assertSame($expected, ClassHelper::toDash($class));
+        self::assertSame($expected, ClassHelper::toDash($class));
     }
 
     /**
@@ -261,7 +261,7 @@ class ClassHelperTest extends TestCase
      */
     public function testToDot(string $class, string $expected): void
     {
-        static::assertSame($expected, ClassHelper::toDot($class));
+        self::assertSame($expected, ClassHelper::toDot($class));
     }
 
     /**
@@ -269,7 +269,7 @@ class ClassHelperTest extends TestCase
      */
     public function testToUnderscore(string $class, string $expected): void
     {
-        static::assertSame($expected, ClassHelper::toUnderscore($class));
+        self::assertSame($expected, ClassHelper::toUnderscore($class));
     }
 
     private function getClassHelperTestObject(string $code, int $id, string $name): ClassHelperTestObject

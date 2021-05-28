@@ -92,7 +92,7 @@ return (new PhpCsFixer\Config())
             ],
             'phpdoc_order'                          => true,
             'phpdoc_types_order'                    => true,
-            'psr0'                                  => true,
+            'psr_autoloading'                       => true,
             'simplified_null_return'                => true,
             'strict_comparison'                     => true,
             'strict_param'                          => true,

@@ -70,6 +70,7 @@ return (new PhpCsFixer\Config())
             'doctrine_annotation_indentation'       => [
                 'indent_mixed_lines' => true,
             ],
+            'echo_tag_syntax'                       => true,
             'header_comment'                        => [
                 'header' => '',
             ],
@@ -78,7 +79,6 @@ return (new PhpCsFixer\Config())
             'mb_str_functions'                      => true,
             'no_null_property_initialization'       => true,
             'no_php4_constructor'                   => true,
-            'no_short_echo_tag'                     => true,
             'no_superfluous_elseif'                 => true,
             'no_superfluous_phpdoc_tags'            => true,
             'no_unreachable_default_argument_value' => true,
@@ -99,4 +99,4 @@ return (new PhpCsFixer\Config())
         ]
     )
     ->setFinder($finder)
-;
+    ;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\Helper;
 
 use App\Metatrader\Automation\DTO\TerminalDTO;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 class TerminalHelper
@@ -12,20 +13,107 @@ class TerminalHelper
     public const TERMINAL_CLUSTER_EXE_PATTERN  = '/[A-Z]{1}:\\\\MT[4-5]-\d+\\\\terminal(64)?\.exe/';
     public const TERMINAL_CLUSTER_PATH_PATTERN = '/[A-Z]{1}:\\\\MT[4-5]-\d+\\\\/';
 
-    private static array $cache;
+    public static function findOneFree(string $dataPath): TerminalDTO
+    {
+        self::createCluster($dataPath);
+        $terminals = self::findTerminals($dataPath);
+        $timeout   = 0;
+
+        while (true)
+        {
+            self::updateTerminalStatus($terminals);
+
+            foreach ($terminals as $terminalDTO)
+            {
+                if (!self::isSupported($terminalDTO) || !self::isCluster($terminalDTO))
+                {
+                    continue;
+                }
+
+                if ($terminalDTO->isBusy())
+                {
+                    sleep(1);
+
+                    continue;
+                }
+
+                return $terminalDTO;
+            }
+
+            if ($timeout++ > count($terminals) * 10)
+            {
+                throw new \RuntimeException('Timeout waiting a free terminal configured in path ' . $dataPath);
+            }
+        }
+    }
+
+    private static function createCluster(string $dataPath): void
+    {
+        if (WindowsHelper::getNumberOfCores() === self::getNumberOfClusterTerminals($dataPath))
+        {
+            return;
+        }
+
+        $originalTerminalDTO = self::findOriginalTerminal($dataPath);
+        $sourcePath          = dirname($originalTerminalDTO->terminalExe);
+        $filesystem          = new Filesystem();
+
+        for ($i = 1; $i <= WindowsHelper::getNumberOfCores(); ++$i)
+        {
+            // TODO: Only supports MT4 for now
+            $clusterPath = implode(DIRECTORY_SEPARATOR, [mb_substr($sourcePath, 0, 2), 'MT4-' . $i]);
+
+            if (!is_dir($clusterPath))
+            {
+                $filesystem->mirror($sourcePath, $clusterPath);
+                $terminalExe = $clusterPath . DIRECTORY_SEPARATOR . 'terminal.exe';
+                exec(sprintf('"%s" /?', $terminalExe));
+
+                foreach (self::findTerminals($dataPath) as $terminalDTO)
+                {
+                    if ($terminalExe === $terminalDTO->terminalExe)
+                    {
+                        $paths = [
+                            DIRECTORY_SEPARATOR . 'config',
+                            DIRECTORY_SEPARATOR . 'history',
+                            DIRECTORY_SEPARATOR . 'MQL4' . DIRECTORY_SEPARATOR . 'Experts',
+                            DIRECTORY_SEPARATOR . 'templates',
+                        ];
+
+                        foreach ($paths as $path)
+                        {
+                            $filesystem->mirror($originalTerminalDTO->terminalPath . $path, $terminalDTO->terminalPath . $path, null, ['override' => true]);
+                        }
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private static function findOriginalTerminal(string $dataPath): TerminalDTO
+    {
+        $terminals = self::findTerminals($dataPath);
+
+        foreach ($terminals as $terminalDTO)
+        {
+            // TODO: Ignore MT4 cluster with a some created cluster file like .cluster in the terminalExe directory
+            // TODO: Find the original based on fixed parameter in config, this only take the first MT4 non clustered available
+            if (self::isSupported($terminalDTO) && !self::isCluster($terminalDTO))
+            {
+                return $terminalDTO;
+            }
+        }
+
+        throw new \RuntimeException('Unable to find the original terminal in configured path ' . $dataPath);
+    }
 
     /**
      * @return TerminalDTO[]
      */
-    public static function findAllTerminalDTOs(string $dataPath): array
+    private static function findTerminals(string $dataPath): array
     {
-        $cache = self::$cache[__FUNCTION__][$dataPath] ?? [];
-
-        if (!empty($cache))
-        {
-            return $cache;
-        }
-
         $finder = new Finder();
         $finder->files()->in($dataPath)->depth(1)->name('origin.txt');
         $terminals = [];
@@ -48,44 +136,28 @@ class TerminalHelper
             );
         }
 
-        /*
-         * TODO: What happens if no terminals exists in cluster? auto-build? manually copy?
-         */
         if (empty($terminals))
         {
             throw new \RuntimeException('Not found any terminal configured in path ' . $dataPath);
         }
 
-        return self::$cache[__FUNCTION__][$dataPath] = $terminals;
+        return $terminals;
     }
 
-    public static function findOneFree(string $dataPath): TerminalDTO
+    private static function getNumberOfClusterTerminals(string $dataPath): int
     {
-        $terminalDTOs = self::findAllTerminalDTOs($dataPath);
+        $count     = 0;
+        $terminals = self::findTerminals($dataPath);
 
-        while (true)
+        foreach ($terminals as $terminalDTO)
         {
-            self::updateTerminalStatus($terminalDTOs);
-
-            foreach ($terminalDTOs as $terminalDTO)
+            if (self::isSupported($terminalDTO) && self::isCluster($terminalDTO))
             {
-                if (!self::isSupported($terminalDTO) || !self::isCluster($terminalDTO))
-                {
-                    continue;
-                }
-
-                if ($terminalDTO->isBusy())
-                {
-                    sleep(1);
-
-                    continue;
-                }
-
-                return $terminalDTO;
+                ++$count;
             }
-
-            sleep(count($terminalDTOs));
         }
+
+        return $count;
     }
 
     private static function getTerminalExe(string $terminalPath): string

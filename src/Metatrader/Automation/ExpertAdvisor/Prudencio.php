@@ -10,10 +10,15 @@ class Prudencio extends AbstractExpertAdvisor
 {
     public function generateBacktestReportName(EntityInterface $backtestEntity): \Generator
     {
+        // TODO: Move to common parameters of all backtest
+        // TODO: Iterate over dates by config step
         $fromDate     = clone $backtestEntity->getFrom();
         $toDate       = $backtestEntity->getTo();
         $period       = $backtestEntity->getPeriod();
         $stepMonths   = $this->getParameters()->getInt('step_months');
+
+        // TODO: Set specific parameters of this backtest
+        // TODO: Iterate over min/max by step
         $distanceData = $this->getParameters()->get('distance');
         $hedgingData  = $this->getParameters()->get('hedging');
         $profitData   = $this->getParameters()->get('profit');

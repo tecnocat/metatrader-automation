@@ -9,12 +9,15 @@ use Symfony\Component\Finder\Finder;
 
 class TerminalHelper
 {
+    public const TERMINAL_CLUSTER_EXE_PATTERN  = '/[A-Z]{1}:\\\\MT[4-5]-\d+\\\\terminal(64)?\.exe/';
+    public const TERMINAL_CLUSTER_PATH_PATTERN = '/[A-Z]{1}:\\\\MT[4-5]-\d+\\\\/';
+
     private static array $cache;
 
     /**
      * @return TerminalDTO[]
      */
-    public static function findAll(string $dataPath): array
+    public static function findAllTerminalDTOs(string $dataPath): array
     {
         $cache = self::$cache[__FUNCTION__][$dataPath] ?? [];
 
@@ -45,6 +48,9 @@ class TerminalHelper
             );
         }
 
+        /*
+         * TODO: What happens if no terminals exists in cluster? auto-build? manually copy?
+         */
         if (empty($terminals))
         {
             throw new \RuntimeException('Not found any terminal configured in path ' . $dataPath);
@@ -55,11 +61,15 @@ class TerminalHelper
 
     public static function findOneFree(string $dataPath): TerminalDTO
     {
+        $terminalDTOs = self::findAllTerminalDTOs($dataPath);
+
         while (true)
         {
-            foreach (self::findAll($dataPath) as $terminalDTO)
+            self::updateTerminalStatus($terminalDTOs);
+
+            foreach ($terminalDTOs as $terminalDTO)
             {
-                if (!$terminalDTO->isSupported() || !$terminalDTO->isCluster())
+                if (!self::isSupported($terminalDTO) || !self::isCluster($terminalDTO))
                 {
                     continue;
                 }
@@ -73,6 +83,8 @@ class TerminalHelper
 
                 return $terminalDTO;
             }
+
+            sleep(count($terminalDTOs));
         }
     }
 
@@ -100,5 +112,33 @@ class TerminalHelper
         }
 
         return -1;
+    }
+
+    private static function isCluster(TerminalDTO $terminalDTO): bool
+    {
+        return (bool) preg_match(self::TERMINAL_CLUSTER_PATH_PATTERN, $terminalDTO->terminalExe);
+    }
+
+    private static function isSupported(TerminalDTO $terminalDTO): bool
+    {
+        return 4 === $terminalDTO->terminalVersion;
+    }
+
+    /**
+     * @param TerminalDTO[] $terminals
+     */
+    private static function updateTerminalStatus(array $terminals): void
+    {
+        $terminalsRunning = WindowsHelper::getTerminalsRunning();
+
+        foreach ($terminals as $terminalDTO)
+        {
+            $terminalDTO->setFree();
+
+            if (in_array($terminalDTO->terminalExe, $terminalsRunning, true))
+            {
+                $terminalDTO->setBusy();
+            }
+        }
     }
 }

@@ -32,16 +32,6 @@ class TerminalDTO extends DTO
         $this->busy = true;
     }
 
-    public function isCluster(): bool
-    {
-        return (bool) preg_match('/\\\\MT[4-5]-\d+\\\\/', $this->terminalExe);
-    }
-
-    public function isSupported(): bool
-    {
-        return 4 === $this->terminalVersion;
-    }
-
     public function setFree(): void
     {
         $this->busy = false;

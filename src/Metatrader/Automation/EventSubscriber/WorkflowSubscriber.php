@@ -10,9 +10,9 @@ use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
 use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\Entity\SaveEntityEvent;
-use App\Metatrader\Automation\Event\Metatrader\WriteConfigEvent;
 use App\Metatrader\Automation\Event\Metatrader\ExecutionEvent;
 use App\Metatrader\Automation\Event\Metatrader\FindTerminalEvent;
+use App\Metatrader\Automation\Event\Metatrader\WriteConfigEvent;
 use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -69,8 +69,6 @@ class WorkflowSubscriber extends AbstractEventSubscriber
                 return;
             }
 
-            $terminalDTO = $event->getTerminalDTO();
-
             // TODO: Prepare terminal.ini
             if (!$this->writeConfig($event, WriteConfigEvent::TESTER_CONFIG_TYPE))
             {
@@ -86,6 +84,8 @@ class WorkflowSubscriber extends AbstractEventSubscriber
 
                 return;
             }
+
+            $terminalDTO = $event->getTerminalDTO();
 
             // TODO: Tick data suite semaphore
             // TODO: Metatrader backtest launch

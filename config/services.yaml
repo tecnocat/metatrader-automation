@@ -11,11 +11,11 @@ parameters:
         active: true
         distance:
           max: 1000
-          min: 1000
+          min: 100
           step: 50
         hedging:
           max: 2000
-          min: 2000
+          min: 100
           step: 50
         profit:
           max: 50

@@ -49,4 +49,22 @@ abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
     {
         return $this->parameters->getBoolean('active');
     }
+
+    final public function iterate(array $array): \Generator
+    {
+        foreach ((array) array_pop($array) as $value)
+        {
+            if (count($array))
+            {
+                foreach ($this->iterate($array) as $combination)
+                {
+                    yield array_merge([$value], $combination);
+                }
+            }
+            else
+            {
+                yield [$value];
+            }
+        }
+    }
 }

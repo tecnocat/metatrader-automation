@@ -61,7 +61,6 @@ class WorkflowSubscriber extends AbstractEventSubscriber
             // TODO: Remove this direct output or change to output event
             echo $backtestReportName . ' processing...' . PHP_EOL;
 
-            // TODO: Metatrader instance available
             if (!$this->findTerminal($event))
             {
                 $event->addError('Unable to find free Terminal');
@@ -69,7 +68,6 @@ class WorkflowSubscriber extends AbstractEventSubscriber
                 return;
             }
 
-            // TODO: Prepare terminal.ini
             if (!$this->writeConfig($event, WriteConfigEvent::TESTER_CONFIG_TYPE))
             {
                 $event->addError('Unable to build the Terminal config');
@@ -77,7 +75,6 @@ class WorkflowSubscriber extends AbstractEventSubscriber
                 return;
             }
 
-            // TODO: Prepare expertAdvisor.ini
             if (!$this->writeConfig($event, WriteConfigEvent::EXPERT_ADVISOR_CONFIG_TYPE))
             {
                 $event->addError('Unable to build the Expert Advisor config');

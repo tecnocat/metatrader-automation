@@ -112,19 +112,18 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 
 #### Current development 🔥
 
-* Workflow steps to detect Metatrader 4 instances free to run
+* Improve the iteration steps generators to simplify Expert Advisors
+* Refactor every class object / entity to a Data Transfer Object
+* System to handle start / stop of Tick Data Suite during backtest
 
 #### Next steps ✨
 
-* Cluster generator (copy many instances of main Metatrader 4)
-* System to handle start / stop of Tick Data Suite during backtest
 * Multiple Expert Advisors and symbols to backtesting at same time
 * Analyze database to allow relaunch the already executed tests
 * May be store backtest report image in the database or folder
 * Put Expert Advisor input parameters inside class as properties
 * Backtest report names must include deposit or remove period dates
 * Auto improve parameters for expert advisor reading stored backtests
-* Refactor every class object / entity to a Data Transfer Object
 * Refactor error handling, pass event to event in a other event
 * Refactor import backtest report and make unnecessary the name
 
@@ -145,3 +144,5 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Clean the Kernel and move the logic to isolated Compiler pass
 * Find on data folder for installed Metatrader 4 instances and launch
 * Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
+* Workflow steps to detect Metatrader 4 instances free to run
+* Cluster generator (copy many instances of main Metatrader 4)

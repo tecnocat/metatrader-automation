@@ -10,8 +10,10 @@ use Symfony\Component\Finder\Finder;
 
 class TerminalHelper
 {
-    public const TERMINAL_CLUSTER_EXE_PATTERN  = '/[A-Z]{1}:\\\\MT[4-5]-\d+\\\\terminal(64)?\.exe/';
-    public const TERMINAL_CLUSTER_PATH_PATTERN = '/[A-Z]{1}:\\\\MT[4-5]-\d+\\\\/';
+    public const TERMINAL_CLUSTER_EXE_PATTERN  = '/[A-Z]:\\\\MT[4-5]-\d+\\\\terminal(64)?\.exe/';
+    public const TERMINAL_CLUSTER_PATH_PATTERN = '/[A-Z]:\\\\MT[4-5]-\d+\\\\/';
+
+    private static array $cache = [];
 
     public static function findOneFree(string $dataPath): TerminalDTO
     {
@@ -69,7 +71,7 @@ class TerminalHelper
                 $terminalExe = $clusterPath . DIRECTORY_SEPARATOR . 'terminal.exe';
                 exec(sprintf('"%s" /?', $terminalExe));
 
-                foreach (self::findTerminals($dataPath) as $terminalDTO)
+                foreach (self::findTerminals($dataPath, false) as $terminalDTO)
                 {
                     if ($terminalExe === $terminalDTO->terminalExe)
                     {
@@ -112,8 +114,15 @@ class TerminalHelper
     /**
      * @return TerminalDTO[]
      */
-    private static function findTerminals(string $dataPath): array
+    private static function findTerminals(string $dataPath, bool $cached = true): array
     {
+        $cacheKey = md5(__FUNCTION__ . $dataPath);
+
+        if (isset(self::$cache[$cacheKey]) && $cached)
+        {
+            return self::$cache[$cacheKey];
+        }
+
         $finder = new Finder();
         $finder->files()->in($dataPath)->depth(1)->name('origin.txt');
         $terminals = [];
@@ -141,7 +150,7 @@ class TerminalHelper
             throw new \RuntimeException('Not found any terminal configured in path ' . $dataPath);
         }
 
-        return $terminals;
+        return self::$cache[$cacheKey] = $terminals;
     }
 
     private static function getNumberOfClusterTerminals(string $dataPath): int

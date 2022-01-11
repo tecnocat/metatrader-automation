@@ -79,6 +79,7 @@ class TerminalHelper
                             DIRECTORY_SEPARATOR . 'config',
                             DIRECTORY_SEPARATOR . 'history',
                             DIRECTORY_SEPARATOR . 'MQL4' . DIRECTORY_SEPARATOR . 'Experts',
+                            DIRECTORY_SEPARATOR . 'MQL4' . DIRECTORY_SEPARATOR . 'Include',
                             DIRECTORY_SEPARATOR . 'templates',
                         ];
 

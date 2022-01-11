@@ -15,7 +15,7 @@ class WindowsHelper
             // NumberOfCores NumberOfEnabledCore NumberOfLogicalProcessors ThreadCount
             // 4             4                   8                         8
             self::$cores = 1;
-            $wmic        = popen('wmic cpu get NumberOfEnabledCore', 'rb');
+            $wmic        = popen('wmic cpu get NumberOfLogicalProcessors', 'rb');
 
             if (false !== $wmic)
             {

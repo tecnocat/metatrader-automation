@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Metatrader\Automation\Helper;
 
 /**
- * Credits to bpolaszek/cartesian-product
+ * Credits to bpolaszek/cartesian-product.
  */
 class CartesianHelper implements \Countable, \IteratorAggregate
 {
-    private array $set;
-    private bool  $recursive;
     private int   $count;
+    private bool  $recursive;
+    private array $set;
 
     public function __construct(array $set, bool $recursive = false)
     {
@@ -71,12 +73,10 @@ class CartesianHelper implements \Countable, \IteratorAggregate
         }
     }
 
-    private static function subset(array $set): CartesianHelper
-    {
-        return new self($set, true);
-    }
-
-    private function validate($subset, $key): void
+    /**
+     * @param array|\Countable|\Traversable $subset
+     */
+    private function validate($subset, string $key): void
     {
         if (is_array($subset) && !empty($subset))
         {
@@ -89,5 +89,10 @@ class CartesianHelper implements \Countable, \IteratorAggregate
         }
 
         throw new \InvalidArgumentException(sprintf('Key "%s" should return a non-empty iterable', $key));
+    }
+
+    private static function subset(array $set): CartesianHelper
+    {
+        return new self($set, true);
     }
 }

@@ -15,18 +15,6 @@ use Symfony\Component\Finder\Finder;
 
 class MetatraderBacktestImportCommand extends AbstractCommand
 {
-    protected function configure()
-    {
-        parent::configure();
-
-        $this
-            ->addArgument('directory', InputArgument::REQUIRED, 'The absolute path of the backtest reports')
-            ->setDescription('Import a Metatrader backtest reports based on selected path')
-            ->setHelp('This command allow you to import Metatrader backtest reports to the database')
-            ->setName($this->generateName())
-        ;
-    }
-
     public function process(): int
     {
         try
@@ -88,5 +76,17 @@ class MetatraderBacktestImportCommand extends AbstractCommand
         $progressBar->finish();
 
         return Command::SUCCESS;
+    }
+
+    protected function configure()
+    {
+        parent::configure();
+
+        $this
+            ->addArgument('directory', InputArgument::REQUIRED, 'The absolute path of the backtest reports')
+            ->setDescription('Import a Metatrader backtest reports based on selected path')
+            ->setHelp('This command allow you to import Metatrader backtest reports to the database')
+            ->setName($this->generateName())
+        ;
     }
 }

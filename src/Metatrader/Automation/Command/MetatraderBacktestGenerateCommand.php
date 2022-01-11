@@ -12,23 +12,6 @@ use Symfony\Component\Console\Input\InputArgument;
 
 class MetatraderBacktestGenerateCommand extends AbstractCommand
 {
-    protected function configure()
-    {
-        parent::configure();
-
-        $this
-            ->addArgument('expertAdvisor', InputArgument::REQUIRED, 'The name of the Expert Advisor')
-            ->addArgument('symbol', InputArgument::REQUIRED, 'The symbol to test with the Expert Advisor')
-            ->addArgument('period', InputArgument::REQUIRED, 'The period to test with the Expert Advisor')
-            ->addArgument('deposit', InputArgument::REQUIRED, 'The amount of equity to test with the Expert Advisor')
-            ->addArgument('from', InputArgument::REQUIRED, 'The from date to test with the Expert Advisor')
-            ->addArgument('to', InputArgument::REQUIRED, 'The to date to test with the Expert Advisor')
-            ->setDescription('Generate a Metatrader backtest reports based on selected parameters')
-            ->setHelp('This command allow you to run multiple Metatrader instances and backtests automatically')
-            ->setName($this->generateName())
-        ;
-    }
-
     public function process(): int
     {
         $parameters       = array_merge($this->getArguments(), $this->getOptions());
@@ -65,5 +48,22 @@ class MetatraderBacktestGenerateCommand extends AbstractCommand
         }
 
         return Command::SUCCESS;
+    }
+
+    protected function configure()
+    {
+        parent::configure();
+
+        $this
+            ->addArgument('expertAdvisor', InputArgument::REQUIRED, 'The name of the Expert Advisor')
+            ->addArgument('symbol', InputArgument::REQUIRED, 'The symbol to test with the Expert Advisor')
+            ->addArgument('period', InputArgument::REQUIRED, 'The period to test with the Expert Advisor')
+            ->addArgument('deposit', InputArgument::REQUIRED, 'The amount of equity to test with the Expert Advisor')
+            ->addArgument('from', InputArgument::REQUIRED, 'The from date to test with the Expert Advisor')
+            ->addArgument('to', InputArgument::REQUIRED, 'The to date to test with the Expert Advisor')
+            ->setDescription('Generate a Metatrader backtest reports based on selected parameters')
+            ->setHelp('This command allow you to run multiple Metatrader instances and backtests automatically')
+            ->setName($this->generateName())
+        ;
     }
 }

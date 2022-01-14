@@ -81,8 +81,14 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
         // At the moment iterator_to_array is required because 2 level of Generators
         $iterations = [
 
-            // Date range iterator -> (from date, to date, step months)
-            iterator_to_array($this->dateRangeIterator(new \DateTime('2013-01-01'), new \DateTime('2013-06-01'), 3)),
+            // Date range iterator
+            iterator_to_array(
+                $this->dateRangeIterator(
+                    new \DateTime('2013-01-01'), // Start date
+                    new \DateTime('2013-06-01'), // End date
+                    3                            // How months each step?
+                )
+            ),
             // This will generate a date range array like this:
             // ['from' => '2013.01.01', 'to' => '2013.04.01']
             // ['from' => '2013.02.01', 'to' => '2013.05.01']
@@ -90,8 +96,17 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
             // ['from' => '2013.04.01', 'to' => '2013.06.01']
             // ['from' => '2013.05.01', 'to' => '2013.06.01']
 
-            // Min max iterator -> (parameter name, [minimum, maximum, step])
-            iterator_to_array($this->minMaxIterator('ticks', ['min' => 100, 'max' => 300, 'step' => 50])),
+            // Min max iterator
+            iterator_to_array(
+                $this->minMaxIterator(
+                    'ticks',          // Name of the parameter
+                    [
+                        'min' => 100, // Start range
+                        'max' => 300, // End range
+                        'step' => 50, // How many steps?
+                    ]
+                )
+            ),
             // This will generate a range array like this:
             // ['ticks' => 100]
             // ['ticks' => 150]
@@ -99,8 +114,13 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
             // ['ticks' => 250]
             // ['ticks' => 300]
 
-            // Simple iterator -> (parameter name, [elements])
-            iterator_to_array($this->simpleIterator('period', ['M15', 'H4', 'D1'])),
+            // Simple iterator
+            iterator_to_array(
+                $this->simpleIterator(
+                    'period',           // Name of the parameter
+                    ['M15', 'H4', 'D1'] // Elements to iterate
+                )
+            ),
             // This will generate a range array like this:
             // ['period' => 'M15']
             // ['period' => 'H4']

@@ -40,7 +40,7 @@ class MetatraderBacktestImportCommand extends AbstractCommand
 
         foreach ($finder as $file)
         {
-            $name            = $file->getFilename();
+            $name            = BacktestReportHelper::normalizeBacktestReportName($file->getFilename());
             $criteria        = ['name' => $name];
             $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
             $this->dispatch($findEntityEvent);

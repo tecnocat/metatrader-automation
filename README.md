@@ -77,24 +77,55 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
         // You can fetch Expert Advisor parameters calling $this->getParameters() 
         $limit = $this->getParameters()->get('limit');
 
-        // Your iteration logic to generate a unique backtest report name
-        for ($iteration = 1; $iteration <= $limit; $iteration++)
+        // Your iterations parameters to generate a unique backtest report name
+        // At the moment iterator_to_array is required because 2 level of Generators
+        $iterations = [
+
+            // Date range iterator -> (from date, to date, step months)
+            iterator_to_array($this->dateRangeIterator(new \DateTime('2013-01-01'), new \DateTime('2013-06-01'), 3)),
+            // This will generate a date range array like this:
+            // ['from' => '2013.01.01', 'to' => '2013.04.01']
+            // ['from' => '2013.02.01', 'to' => '2013.05.01']
+            // ['from' => '2013.03.01', 'to' => '2013.06.01']
+            // ['from' => '2013.04.01', 'to' => '2013.06.01']
+            // ['from' => '2013.05.01', 'to' => '2013.06.01']
+
+            // Min max iterator -> (parameter name, [minimum, maximum, step])
+            iterator_to_array($this->minMaxIterator('ticks', ['min' => 100, 'max' => 300, 'step' => 50])),
+            // This will generate a range array like this:
+            // ['ticks' => 100]
+            // ['ticks' => 150]
+            // ['ticks' => 200]
+            // ['ticks' => 250]
+            // ['ticks' => 300]
+
+            // Simple iterator -> (parameter name, [elements])
+            iterator_to_array($this->simpleIterator('period', ['M15', 'H4', 'D1'])),
+            // This will generate a range array like this:
+            // ['period' => 'M15']
+            // ['period' => 'H4']
+            // ['period' => 'D1']
+        ];
+
+        // Your main iteration loop, this generates a cartesian combination of all iterations
+        foreach ($this->iterate($iterations) as $iteration)
         {
-            // Generate a unique name to store the backtest report when Metatrader 4 ends
-            $backtestReportName      = "unique-name-based-on-parameters-$iteration.html";
-            $currentBacktestSettings = [
-                // Inputs for your Metatrader Expert Advisor (require an alias to handle)
-                // Can be more, is for any of the "input int InputIteration = 1;" on .ex4
-                'iteration'          => $iteration,
+            yield $this->getBacktestReportName($iteration);
+            // This will generate a report names like this:
+            // M15-2013.01.01-2013.04.01-t100.html
+            // M15-2013.02.01-2013.05.01-t100.html
+            // M15-2013.03.01-2013.06.01-t100.html
+            // etc...
 
-                // Backtest report name to let Metatrader where must be saved
-                'backtestReportName' => $backtestReportName,
-            ];
+            // H4-2013.01.01-2013.04.01-t100.html
+            // H4-2013.02.01-2013.05.01-t100.html
+            // H4-2013.03.01-2013.06.01-t100.html
+            // etc...
 
-            // Never forget to store current iteration settings to save later in configs
-            $this->setCurrentBacktestSettings($currentBacktestSettings);
-
-            yield $backtestReportName;
+            // D1-2013.01.01-2013.04.01-t100.html
+            // D1-2013.02.01-2013.05.01-t100.html
+            // D1-2013.03.01-2013.06.01-t100.html
+            // etc...
         }
     }
 
@@ -112,7 +143,6 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 
 #### Current development 🔥
 
-* Improve the iteration steps generators to simplify Expert Advisors
 * Refactor every class object / entity to a Data Transfer Object
 * System to handle start / stop of Tick Data Suite during backtest
 
@@ -146,3 +176,4 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Config.ini and ExpertAdvisor.ini files to auto-start up Metatrader 4
 * Workflow steps to detect Metatrader 4 instances free to run
 * Cluster generator (copy many instances of main Metatrader 4)
+* Improve the iteration steps generators to simplify Expert Advisors

@@ -12,6 +12,7 @@ class Prudencio extends AbstractExpertAdvisor
     {
         $iterations = [
             // TODO: How to fix 'Cannot traverse an already closed generator' ?
+            // TODO: Try https://github.com/PatchRanger/cartesian-iterator
             iterator_to_array($this->dateRangeIterator($backtestEntity->getFrom(), $backtestEntity->getTo(), $this->getParameters()->getInt('step_months'))),
             iterator_to_array($this->minMaxIterator('distance', $this->getParameters()->get('distance'))),
             iterator_to_array($this->minMaxIterator('hedging', $this->getParameters()->get('hedging'))),

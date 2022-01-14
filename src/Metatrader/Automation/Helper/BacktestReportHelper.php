@@ -21,8 +21,8 @@ class BacktestReportHelper
             switch ($parameterName)
             {
                 case 'from':
-                case 'to':
                 case 'period':
+                case 'to':
                     break;
 
                 default:
@@ -80,7 +80,7 @@ class BacktestReportHelper
     public static function parseFile(string $file): array
     {
         $parameters = [
-            'name' => basename($file),
+            'name' => self::normalizeBacktestReportName(basename($file)),
         ];
 
         foreach (self::readFile($file) as $number => $line)

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Metatrader\Automation\Helper;
 
 use App\Metatrader\Automation\Helper\CartesianHelper;
@@ -12,31 +14,26 @@ class CartesianHelperTest extends TestCase
         return [
             [
                 [
-                    range(1, 2),
-                ],
-                [
                     [1],
                     [2],
                 ],
-            ],
-            [
                 [
                     range(1, 2),
-                    range(1, 2),
                 ],
+            ],
+            [
                 [
                     [1, 1],
                     [1, 2],
                     [2, 1],
                     [2, 2],
                 ],
+                [
+                    range(1, 2),
+                    range(1, 2),
+                ],
             ],
             [
-                [
-                    range(1, 3),
-                    range(1, 3),
-                    range(1, 3),
-                ],
                 [
                     [1, 1, 1],
                     [1, 1, 2],
@@ -66,6 +63,11 @@ class CartesianHelperTest extends TestCase
                     [3, 3, 2],
                     [3, 3, 3],
                 ],
+                [
+                    range(1, 3),
+                    range(1, 3),
+                    range(1, 3),
+                ],
             ],
         ];
     }
@@ -74,25 +76,25 @@ class CartesianHelperTest extends TestCase
     {
         return [
             [
-                [
-                    range(1, 2),
-                ],
                 2,
-            ],
-            [
                 [
                     range(1, 2),
-                    range(1, 2),
                 ],
+            ],
+            [
                 2 * 2,
+                [
+                    range(1, 2),
+                    range(1, 2),
+                ],
             ],
             [
+                3 * 3 * 3,
                 [
                     range(1, 3),
                     range(1, 3),
                     range(1, 3),
                 ],
-                3 * 3 * 3,
             ],
         ];
     }
@@ -173,7 +175,7 @@ class CartesianHelperTest extends TestCase
     /**
      * @dataProvider getAsArrayData
      */
-    public function testAsArray(array $set, array $expected)
+    public function testAsArray(array $expected, array $set): void
     {
         $cartesianHelper = new CartesianHelper($set);
 
@@ -183,14 +185,14 @@ class CartesianHelperTest extends TestCase
     /**
      * @dataProvider getCountData
      */
-    public function testCount(array $set, int $expected)
+    public function testCount(int $expected, array $set): void
     {
         $cartesianHelper = new CartesianHelper($set);
 
         self::assertSame($expected, $cartesianHelper->count());
     }
 
-    public function testGetIterator()
+    public function testGetIterator(): void
     {
         $cartesianHelper = new CartesianHelper([]);
         self::assertInstanceOf(\Generator::class, $cartesianHelper->getIterator());
@@ -199,7 +201,7 @@ class CartesianHelperTest extends TestCase
     /**
      * @dataProvider get__constructData
      */
-    public function test__construct(array $set, array $array, int $count)
+    public function testConstruct(array $set, array $array, int $count): void
     {
         $cartesianHelper = new CartesianHelper($set);
 

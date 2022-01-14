@@ -14,16 +14,16 @@ class MetatraderBacktestImportCommandTest extends KernelTestCase
     {
         return [
             [
+                '[ERROR] The directory ' . __DIR__ . ' does not contains any backtest report',
                 [
                     'directory' => __DIR__,
                 ],
-                '[ERROR] The directory ' . __DIR__ . ' does not contains any backtest report',
             ],
             [
+                '[ERROR] The "' . __DIR__ . 'a1b2c3d4e5f6" directory does not exist.',
                 [
                     'directory' => __DIR__ . 'a1b2c3d4e5f6',
                 ],
-                '[ERROR] The "' . __DIR__ . 'a1b2c3d4e5f6" directory does not exist.',
             ],
         ];
     }
@@ -31,7 +31,7 @@ class MetatraderBacktestImportCommandTest extends KernelTestCase
     /**
      * @dataProvider getExecuteData
      */
-    public function testExecute(array $arguments, string $expected): void
+    public function testExecute(string $expected, array $arguments): void
     {
         $kernel        = static::createKernel();
         $application   = new Application($kernel);

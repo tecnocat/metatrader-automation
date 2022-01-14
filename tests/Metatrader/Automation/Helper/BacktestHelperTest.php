@@ -20,6 +20,7 @@ class BacktestHelperTest extends TestCase
                     'deposit'       => '500',
                     'from'          => '2013-01-01',
                     'to'            => '2014-01-01',
+                    'name'          => 'Bartolo:EURUSD:M15:500:2013-01-01:2014-01-01',
                 ],
                 [
                     'expertAdvisor' => 'Bartolo',
@@ -28,18 +29,9 @@ class BacktestHelperTest extends TestCase
                     'deposit'       => '500',
                     'from'          => '2013-01-01',
                     'to'            => '2014-01-01',
-                    'name'          => 'Bartolo:EURUSD:M15:500:2013-01-01:2014-01-01',
                 ],
             ],
             [
-                [
-                    'expertAdvisor' => 'Fermin',
-                    'symbol'        => 'GBPUSD',
-                    'period'        => 'H1',
-                    'deposit'       => '1000',
-                    'from'          => '2013-01-01',
-                    'to'            => '2014-01-01',
-                ],
                 [
                     'expertAdvisor' => 'Fermin',
                     'symbol'        => 'GBPUSD',
@@ -49,16 +41,16 @@ class BacktestHelperTest extends TestCase
                     'to'            => '2014-01-01',
                     'name'          => 'Fermin:GBPUSD:H1:1000:2013-01-01:2014-01-01',
                 ],
-            ],
-            [
                 [
-                    'expertAdvisor' => 'Prudencio',
-                    'symbol'        => 'USDJPY',
-                    'period'        => 'H4',
-                    'deposit'       => '3000',
+                    'expertAdvisor' => 'Fermin',
+                    'symbol'        => 'GBPUSD',
+                    'period'        => 'H1',
+                    'deposit'       => '1000',
                     'from'          => '2013-01-01',
                     'to'            => '2014-01-01',
                 ],
+            ],
+            [
                 [
                     'expertAdvisor' => 'Prudencio',
                     'symbol'        => 'USDJPY',
@@ -68,6 +60,14 @@ class BacktestHelperTest extends TestCase
                     'to'            => '2014-01-01',
                     'name'          => 'Prudencio:USDJPY:H4:3000:2013-01-01:2014-01-01',
                 ],
+                [
+                    'expertAdvisor' => 'Prudencio',
+                    'symbol'        => 'USDJPY',
+                    'period'        => 'H4',
+                    'deposit'       => '3000',
+                    'from'          => '2013-01-01',
+                    'to'            => '2014-01-01',
+                ],
             ],
             [
                 [
@@ -77,6 +77,7 @@ class BacktestHelperTest extends TestCase
                     'deposit'       => '5000',
                     'from'          => '2013-01-01',
                     'to'            => '2014-01-01',
+                    'name'          => 'Wilson:USDCHF:D1:5000:2013-01-01:2014-01-01',
                 ],
                 [
                     'expertAdvisor' => 'Wilson',
@@ -85,7 +86,6 @@ class BacktestHelperTest extends TestCase
                     'deposit'       => '5000',
                     'from'          => '2013-01-01',
                     'to'            => '2014-01-01',
-                    'name'          => 'Wilson:USDCHF:D1:5000:2013-01-01:2014-01-01',
                 ],
             ],
         ];
@@ -94,7 +94,7 @@ class BacktestHelperTest extends TestCase
     /**
      * @dataProvider getAddBacktestNameData
      */
-    public function testAddBacktestName(array $data, array $expected): void
+    public function testAddBacktestName(array $expected, array $data): void
     {
         self::assertSame($expected, BacktestHelper::addBacktestName($data));
     }

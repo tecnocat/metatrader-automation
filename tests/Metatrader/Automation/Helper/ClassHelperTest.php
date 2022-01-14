@@ -13,24 +13,24 @@ class ClassHelperTest extends TestCase
     {
         return [
             [
+                'StdClass',
                 'std_class',
-                'StdClass',
             ],
             [
+                'StdClass',
                 'Std_Class',
-                'StdClass',
             ],
             [
+                'StdClass',
                 'std-class',
-                'StdClass',
             ],
             [
+                'StdClass',
                 'std.class',
-                'StdClass',
             ],
             [
-                'std:class',
                 'StdClass',
+                'std:class',
             ],
         ];
     }
@@ -39,12 +39,12 @@ class ClassHelperTest extends TestCase
     {
         return [
             [
-                'StdClass',
                 'std:class',
+                'StdClass',
             ],
             [
-                'TESTStdClass',
                 'test:std:class',
+                'TESTStdClass',
             ],
         ];
     }
@@ -53,12 +53,12 @@ class ClassHelperTest extends TestCase
     {
         return [
             [
-                'StdClass',
                 'std-class',
+                'StdClass',
             ],
             [
-                'TESTStdClass',
                 'test-std-class',
+                'TESTStdClass',
             ],
         ];
     }
@@ -67,12 +67,12 @@ class ClassHelperTest extends TestCase
     {
         return [
             [
-                'StdClass',
                 'std.class',
+                'StdClass',
             ],
             [
-                'TESTStdClass',
                 'test.std.class',
+                'TESTStdClass',
             ],
         ];
     }
@@ -81,12 +81,12 @@ class ClassHelperTest extends TestCase
     {
         return [
             [
-                'StdClass',
                 'std_class',
+                'StdClass',
             ],
             [
-                'TESTStdClass',
                 'test_std_class',
+                'TESTStdClass',
             ],
         ];
     }
@@ -235,7 +235,7 @@ class ClassHelperTest extends TestCase
     /**
      * @dataProvider getToCamelCaseData
      */
-    public function testToCamelCase(string $class, string $expected): void
+    public function testToCamelCase(string $expected, string $class): void
     {
         self::assertSame($expected, ClassHelper::toCamelCase($class));
     }
@@ -243,7 +243,7 @@ class ClassHelperTest extends TestCase
     /**
      * @dataProvider getToColonData
      */
-    public function testToColon(string $class, string $expected): void
+    public function testToColon(string $expected, string $class): void
     {
         self::assertSame($expected, ClassHelper::toColon($class));
     }
@@ -251,7 +251,7 @@ class ClassHelperTest extends TestCase
     /**
      * @dataProvider getToDashData
      */
-    public function testToDash(string $class, string $expected): void
+    public function testToDash(string $expected, string $class): void
     {
         self::assertSame($expected, ClassHelper::toDash($class));
     }
@@ -259,7 +259,7 @@ class ClassHelperTest extends TestCase
     /**
      * @dataProvider getToDotData
      */
-    public function testToDot(string $class, string $expected): void
+    public function testToDot(string $expected, string $class): void
     {
         self::assertSame($expected, ClassHelper::toDot($class));
     }
@@ -267,7 +267,7 @@ class ClassHelperTest extends TestCase
     /**
      * @dataProvider getToUnderscoreData
      */
-    public function testToUnderscore(string $class, string $expected): void
+    public function testToUnderscore(string $expected, string $class): void
     {
         self::assertSame($expected, ClassHelper::toUnderscore($class));
     }

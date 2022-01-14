@@ -36,9 +36,10 @@ class WindowsHelper
 
         return array_map(function ($path)
         {
+            // @codeCoverageIgnoreStart
             $parts = explode(' ', $path);
 
-            return end($parts);
+            return end($parts); // @codeCoverageIgnoreEnd
         }, $terminalsRunning);
     }
 }

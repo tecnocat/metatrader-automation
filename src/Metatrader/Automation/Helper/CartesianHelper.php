@@ -33,7 +33,7 @@ class CartesianHelper implements \Countable, \IteratorAggregate
                 array_map(
                     function ($subset, $key)
                     {
-                        $this->validate($subset, $key);
+                        $this->validate($subset, (string) $key);
 
                         return count($subset);
                     },
@@ -62,7 +62,7 @@ class CartesianHelper implements \Countable, \IteratorAggregate
         $keys   = array_keys($set);
         $key    = end($keys);
         $subset = array_pop($set);
-        $this->validate($subset, $key);
+        $this->validate($subset, (string) $key);
 
         foreach (self::subset($set) as $product)
         {

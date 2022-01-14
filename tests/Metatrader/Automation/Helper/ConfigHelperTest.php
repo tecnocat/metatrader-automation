@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Metatrader\Automation\Helper;
 
 use App\Metatrader\Automation\Helper\ConfigHelper;
@@ -8,20 +10,59 @@ use PHPUnit\Framework\TestCase;
 
 class ConfigHelperTest extends TestCase
 {
-    public function getFillExpertAdvisorInputsData(): array
+    public function getGetBacktestReportHtmlFileData(): array
+    {
+        return [
+            [
+                'tester\report-name.html',
+                'C:\Some\Data\Path',
+                [
+                    'backtestReportName' => 'report-name.html',
+                ],
+                true,
+            ],
+            [
+                'C:\Some\Data\Path\tester\report-name.html',
+                'C:\Some\Data\Path',
+                [
+                    'backtestReportName' => 'report-name.html',
+                ],
+                false,
+            ],
+        ];
+    }
+
+    public function getGetExpertAdvisorConfigFileData(): array
+    {
+        return [
+            [
+                'tester\Alfa.ini',
+                'C:\Some\Data\Path',
+                'Alfa',
+                true,
+            ],
+            [
+                'C:\Some\Data\Path\tester\Beta.ini',
+                'C:\Some\Data\Path',
+                'Beta',
+                false,
+            ],
+            [
+                'tester\Gamma.ini',
+                'C:\Some\Data\Path',
+                'Gamma',
+                true,
+            ],
+        ];
+    }
+
+    public function getGetExpertAdvisorInputsData(): array
     {
         return [
             [
                 [
-                    'inputs' => [
-                        'foo'   => 'bar',
-                        'foo,F' => 'bar',
-                        'foo,1' => 'bar',
-                        'foo,2' => 'bar',
-                        'foo,3' => 'bar',
-                    ],
+                    'foo' => 'bar',
                 ],
-                [],
                 [
                     'something' => 'foo',
                 ],
@@ -31,29 +72,9 @@ class ConfigHelperTest extends TestCase
             ],
             [
                 [
-                    'config' => [1, 2, 3],
-                    'test'   => [4, 5, 6],
-                    'inputs' => [
-                        'AlfaParameter'   => 'α',
-                        'AlfaParameter,F' => 'α',
-                        'AlfaParameter,1' => 'α',
-                        'AlfaParameter,2' => 'α',
-                        'AlfaParameter,3' => 'α',
-                        'BetaArgument'    => 'β',
-                        'BetaArgument,F'  => 'β',
-                        'BetaArgument,1'  => 'β',
-                        'BetaArgument,2'  => 'β',
-                        'BetaArgument,3'  => 'β',
-                        'GammaInput'      => 'γ',
-                        'GammaInput,F'    => 'γ',
-                        'GammaInput,1'    => 'γ',
-                        'GammaInput,2'    => 'γ',
-                        'GammaInput,3'    => 'γ',
-                    ],
-                ],
-                [
-                    'config' => [1, 2, 3],
-                    'test'   => [4, 5, 6],
+                    'AlfaParameter' => 'α',
+                    'BetaArgument'  => 'β',
+                    'GammaInput'    => 'γ',
                 ],
                 [
                     'alfa'  => 'AlfaParameter',
@@ -65,83 +86,86 @@ class ConfigHelperTest extends TestCase
                     'beta'    => 'β',
                     'gamma'   => 'γ',
                     'missing' => 'none',
+                    'config'  => [1, 2, 3],
+                    'test'    => [4, 5, 6],
                 ],
             ],
         ];
     }
 
-    public function getGetBacktestReportPath(): array
+    public function getGetRelativePathData(): array
     {
         return [
             [
-                //'C:\Some\Data\Path\1D1NFAFAFSHBJSAFHBSAJFBHASJHF\report-name.html',
-                'report-name.html',
-                [
-                    'data_path' => 'C:\Some\Data\Path',
-                ],
-                [
-                    'backtestReportName' => 'report-name.html',
-                ],
+                'This\Relative\Path',
+                'C:\This\Folder\Contains\This\Relative\Path',
+                'C:\This\Folder\Contains',
+            ],
+            [
+                'unix/is/better/than/windows',
+                '/why/unix/is/better/than/windows',
+                '/why',
             ],
         ];
     }
 
-    public function getGetExpertAdvisorPath(): array
+    public function getGetTerminalConfigFileData(): array
     {
         return [
             [
-                //'C:\Some\Data\Path\1D1NFAFAFSHBJSAFHBSAJFBHASJHF\Alfa.ini',
-                'Alfa.ini',
-                [
-                    'data_path' => 'C:\Some\Data\Path',
-                ],
-                'Alfa',
+                'tester\tester.ini',
+                'C:\Some\Data\Path\1234567890abcdef',
+                true,
             ],
             [
-                //'C:\Some\Data\Path\1D1NFAFAFSHBJSAFHBSAJFBHASJHF\Beta.ini',
-                'Beta.ini',
-                [
-                    'data_path' => 'C:\Some\Data\Path',
-                ],
-                'Beta',
-            ],
-            [
-                //'C:\Some\Data\Path\1D1NFAFAFSHBJSAFHBSAJFBHASJHF\Gamma.ini',
-                'Gamma.ini',
-                [
-                    'data_path' => 'C:\Some\Data\Path',
-                ],
-                'Gamma',
+                'C:\Some\Data\Path\1234567890abcdef\tester\tester.ini',
+                'C:\Some\Data\Path\1234567890abcdef',
+                false,
             ],
         ];
     }
 
     /**
-     * @dataProvider getFillExpertAdvisorInputsData
+     * @dataProvider getGetBacktestReportHtmlFileData
      */
-    public function testFillExpertAdvisorInputs(array $expected, array $config, array $alias, array $currentBacktestSettings): void
+    public function testGetBacktestReportHtmlFile(string $expected, string $terminalPath, array $currentBacktestSettings, bool $relative): void
+    {
+        self::assertSame($expected, ConfigHelper::getBacktestReportHtmlFile($terminalPath, $currentBacktestSettings, $relative));
+    }
+
+    /**
+     * @dataProvider getGetExpertAdvisorConfigFileData
+     */
+    public function testGetExpertAdvisorConfigFile(string $expected, string $terminalPath, string $expertAdvisorName, bool $relative): void
+    {
+        self::assertSame($expected, ConfigHelper::getExpertAdvisorConfigFile($terminalPath, $expertAdvisorName, $relative));
+    }
+
+    /**
+     * @dataProvider getGetExpertAdvisorInputsData
+     */
+    public function testGetExpertAdvisorInputs(array $expected, array $alias, array $currentBacktestSettings): void
     {
         $expertAdvisor = $this->createMock(ExpertAdvisorInterface::class);
         $expertAdvisor->expects(self::once())->method('getAlias')->willReturn($alias);
         $expertAdvisor->expects(self::once())->method('getCurrentBacktestSettings')->willReturn($currentBacktestSettings);
-        $config = ConfigHelper::fillExpertAdvisorInputs($config, $expertAdvisor);
 
-        self::assertSame($expected, $config);
+        self::assertSame($expected, ConfigHelper::getExpertAdvisorInputs($expertAdvisor));
     }
 
     /**
-     * @dataProvider getGetBacktestReportPath
+     * @dataProvider getGetRelativePathData
      */
-    public function testGetBacktestReportPath(string $expected, array $parameters, array $currentBacktestSettings): void
+    public function testGetRelativePath(string $expected, string $fullPath, string $relativePath): void
     {
-        self::assertSame($expected, ConfigHelper::getBacktestReportPath($parameters, $currentBacktestSettings));
+        self::assertSame($expected, ConfigHelper::getRelativePath($fullPath, $relativePath));
     }
 
     /**
-     * @dataProvider getGetExpertAdvisorPath
+     * @dataProvider getGetTerminalConfigFileData
      */
-    public function testGetExpertAdvisorPath(string $expected, array $parameters, string $expertAdvisorName): void
+    public function testGetTerminalConfigFile(string $expected, string $terminalPath, bool $relative): void
     {
-        self::assertSame($expected, ConfigHelper::getExpertAdvisorPath($parameters, $expertAdvisorName));
+        self::assertSame($expected, ConfigHelper::getTerminalConfigFile($terminalPath, $relative));
     }
 }

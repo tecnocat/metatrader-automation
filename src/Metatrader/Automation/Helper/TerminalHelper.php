@@ -12,6 +12,7 @@ class TerminalHelper
 {
     public const TERMINAL_CLUSTER_EXE_PATTERN  = '/[A-Z]:\\\\MT[4-5]-\d+\\\\terminal(64)?\.exe/';
     public const TERMINAL_CLUSTER_PATH_PATTERN = '/[A-Z]:\\\\MT[4-5]-\d+\\\\/';
+    public const TERMINAL_DATE_FORMAT          = 'Y.m.d';
 
     private static array $cache = [];
 

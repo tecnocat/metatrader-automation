@@ -7,6 +7,7 @@ namespace App\Metatrader\Automation\EventSubscriber;
 use App\Metatrader\Automation\Annotation\Subscriber;
 use App\Metatrader\Automation\Event\Metatrader\WriteConfigEvent;
 use App\Metatrader\Automation\Helper\ConfigHelper;
+use App\Metatrader\Automation\Helper\TerminalHelper;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -14,8 +15,6 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 class ConfigSubscriber extends AbstractEventSubscriber
 {
-    private const DATE_FORMAT = 'Y.m.d';
-
     public function onWriteConfigEvent(WriteConfigEvent $event): void
     {
         switch ($event->getType())
@@ -100,8 +99,8 @@ class ConfigSubscriber extends AbstractEventSubscriber
                 'TestSpread'           => '15',
                 'TestOptimization'     => 'false',
                 'TestDateEnable'       => 'true',
-                'TestFromDate'         => $backtestEntity->getFrom()->format(self::DATE_FORMAT),
-                'TestToDate'           => $backtestEntity->getTo()->format(self::DATE_FORMAT),
+                'TestFromDate'         => $backtestEntity->getFrom()->format(TerminalHelper::TERMINAL_DATE_FORMAT),
+                'TestToDate'           => $backtestEntity->getTo()->format(TerminalHelper::TERMINAL_DATE_FORMAT),
                 'TestReport'           => ConfigHelper::getBacktestReportHtmlFile($terminalDTO->terminalPath, $expertAdvisor->getCurrentBacktestSettings(), true),
                 'TestReplaceReport'    => 'true',
                 'TestShutdownTerminal' => 'true',

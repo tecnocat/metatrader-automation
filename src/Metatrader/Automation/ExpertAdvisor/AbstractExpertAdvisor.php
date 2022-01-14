@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\ExpertAdvisor;
 
+use App\Metatrader\Automation\Helper\BacktestReportHelper;
 use App\Metatrader\Automation\Interfaces\ExpertAdvisorInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
@@ -50,21 +51,70 @@ abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
         return $this->parameters->getBoolean('active');
     }
 
-    final public function iterate(array $array): \Generator
+    final protected function dateRangeIterator(\DateTime $from, \DateTime $to, int $stepMonths): \Generator
     {
-        foreach ((array) array_pop($array) as $value)
+        $fromDate = clone $from;
+        $toDate   = clone $to;
+
+        while ($fromDate < $toDate)
+        {
+            $limitDate = (clone $fromDate)->modify("+$stepMonths month");
+
+            if ($limitDate > $toDate && 1 < $stepMonths)
+            {
+                --$stepMonths;
+
+                continue;
+            }
+
+            yield [
+                'from' => $fromDate->format(self::METATRADER_DATE_FORMAT),
+                'to'   => $limitDate->format(self::METATRADER_DATE_FORMAT),
+            ];
+
+            $fromDate->modify('+1 month');
+        }
+    }
+
+    final protected function getBacktestReportName(array $backtestSettings): string
+    {
+        // TODO: This sounds bad... Is really needed?
+        $this->setCurrentBacktestSettings($backtestSettings);
+
+        return BacktestReportHelper::getBacktestReportName($backtestSettings);
+    }
+
+    final protected function iterate(array $array): \Generator
+    {
+        foreach (array_pop($array) as $value)
         {
             if (count($array))
             {
                 foreach ($this->iterate($array) as $combination)
                 {
-                    yield array_merge([$value], $combination);
+                    yield array_merge($value, $combination);
                 }
             }
             else
             {
-                yield [$value];
+                yield $value;
             }
+        }
+    }
+
+    final protected function minMaxIterator(string $name, array $range): \Generator
+    {
+        foreach (range($range['min'], $range['max'], $range['step']) as $value)
+        {
+            yield [$name => $value];
+        }
+    }
+
+    final protected function simpleIterator(string $name, array $values): \Generator
+    {
+        foreach ($values as $value)
+        {
+            yield [$name => $value];
         }
     }
 }

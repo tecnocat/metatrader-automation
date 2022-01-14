@@ -10,72 +10,21 @@ class Prudencio extends AbstractExpertAdvisor
 {
     public function generateBacktestReportName(EntityInterface $backtestEntity): \Generator
     {
-        // TODO: Move to common parameters of all backtest
-        // TODO: Iterate over dates by config step
-        $fromDate     = clone $backtestEntity->getFrom();
-        $toDate       = $backtestEntity->getTo();
-        $period       = $backtestEntity->getPeriod();
-        $stepMonths   = $this->getParameters()->getInt('step_months');
+        $iterations = [
+            // TODO: How to fix 'Cannot traverse an already closed generator' ?
+            iterator_to_array($this->dateRangeIterator($backtestEntity->getFrom(), $backtestEntity->getTo(), $this->getParameters()->getInt('step_months'))),
+            iterator_to_array($this->minMaxIterator('distance', $this->getParameters()->get('distance'))),
+            iterator_to_array($this->minMaxIterator('hedging', $this->getParameters()->get('hedging'))),
+            iterator_to_array($this->minMaxIterator('profit', $this->getParameters()->get('profit'))),
+            iterator_to_array($this->simpleIterator('period', [$backtestEntity->getPeriod()])),
+            iterator_to_array($this->simpleIterator('increment', [0])),
+        ];
 
-        // TODO: Set specific parameters of this backtest
-        // TODO: Iterate over min/max by step
-        $distanceData = $this->getParameters()->get('distance');
-        $hedgingData  = $this->getParameters()->get('hedging');
-        $profitData   = $this->getParameters()->get('profit');
-        $increment    = 0;
-
-        while ($fromDate < $toDate)
+        foreach ($this->iterate($iterations) as $iteration)
         {
-            $limitDate = (clone $fromDate)->modify("+$stepMonths month");
+            $iteration['loss'] = $iteration['hedging'] * 2;
 
-            if ($limitDate > $toDate && 1 < $stepMonths)
-            {
-                --$stepMonths;
-
-                continue;
-            }
-
-            $from   = $fromDate->format(self::METATRADER_DATE_FORMAT);
-            $to     = $limitDate->format(self::METATRADER_DATE_FORMAT);
-            $profit = $profitData['min'];
-
-            while ($profit <= $profitData['max'])
-            {
-                $hedging = $hedgingData['min'];
-
-                while ($hedging <= $hedgingData['max'])
-                {
-                    $distance = $distanceData['min'];
-                    $loss     = $hedging * 2;
-
-                    while ($distance <= $distanceData['max'])
-                    {
-                        $backtestReportName      = "$period-$from-$to-d$distance-h$hedging-l$loss-p$profit-i$increment.html";
-                        $currentBacktestSettings = [
-                            'period'             => $period,
-                            'from'               => $from,
-                            'to'                 => $to,
-                            'distance'           => $distance,
-                            'hedging'            => $hedging,
-                            'loss'               => $loss,
-                            'profit'             => $profit,
-                            'increment'          => $increment,
-                            'backtestReportName' => $backtestReportName,
-                        ];
-                        $this->setCurrentBacktestSettings($currentBacktestSettings);
-
-                        yield $backtestReportName;
-
-                        $distance = $distance + $distanceData['step'];
-                    }
-
-                    $hedging += $hedgingData['step'];
-                }
-
-                $profit += $profitData['step'];
-            }
-
-            $fromDate->modify('+1 month');
+            yield $this->getBacktestReportName($iteration);
         }
     }
 

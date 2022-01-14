@@ -47,7 +47,7 @@ class BacktestReportHelper
                 continue;
             }
 
-            $date = \DateTime::createFromFormat(TerminalHelper::DATE_FORMAT, $parameter);
+            $date = \DateTime::createFromFormat(TerminalHelper::TERMINAL_DATE_FORMAT, $parameter);
 
             if ($date instanceof \DateTime)
             {
@@ -64,13 +64,13 @@ class BacktestReportHelper
         {
             if ($firstDate < $secondDate)
             {
-                $backtestParameters['from'] = $firstDate->format(TerminalHelper::DATE_FORMAT);
-                $backtestParameters['to']   = $secondDate->format(TerminalHelper::DATE_FORMAT);
+                $backtestParameters['from'] = $firstDate->format(TerminalHelper::TERMINAL_DATE_FORMAT);
+                $backtestParameters['to']   = $secondDate->format(TerminalHelper::TERMINAL_DATE_FORMAT);
             }
             elseif ($firstDate > $secondDate)
             {
-                $backtestParameters['from'] = $secondDate->format(TerminalHelper::DATE_FORMAT);
-                $backtestParameters['to']   = $firstDate->format(TerminalHelper::DATE_FORMAT);
+                $backtestParameters['from'] = $secondDate->format(TerminalHelper::TERMINAL_DATE_FORMAT);
+                $backtestParameters['to']   = $firstDate->format(TerminalHelper::TERMINAL_DATE_FORMAT);
             }
         }
 

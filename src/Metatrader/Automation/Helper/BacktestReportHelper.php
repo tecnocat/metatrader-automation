@@ -10,6 +10,73 @@ class BacktestReportHelper
     private const ANY_NUMBER = '[-+]?\d+[\.|\,]?\d*';
     private const ANY_WORD   = '[\w\s]+';
 
+    public static function getBacktestReportName(array $backtestSettings): string
+    {
+        ksort($backtestSettings);
+
+        $backtestReportName = $backtestSettings['period'] . '-' . $backtestSettings['from'] . '-' . $backtestSettings['to'];
+
+        foreach ($backtestSettings as $parameterName => $parameterValue)
+        {
+            switch ($parameterName)
+            {
+                case 'from':
+                case 'to':
+                case 'period':
+                    break;
+
+                default:
+                    $backtestReportName .= '-' . mb_substr($parameterName, 0, 1) . $parameterValue;
+            }
+        }
+
+        return $backtestReportName . '.html';
+    }
+
+    public static function normalizeBacktestReportName(string $backtestReportName): string
+    {
+        $backtestParameters = [];
+        $periods            = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1', 'MN1'];
+
+        foreach (explode('-', str_replace('.html', '', $backtestReportName)) as $parameter)
+        {
+            if (in_array($parameter, $periods, true))
+            {
+                $backtestParameters['period'] = $parameter;
+
+                continue;
+            }
+
+            $date = \DateTime::createFromFormat(TerminalHelper::DATE_FORMAT, $parameter);
+
+            if ($date instanceof \DateTime)
+            {
+                $secondDate = isset($firstDate) ? $date : null;
+                $firstDate  = $firstDate ?? $date;
+
+                continue;
+            }
+
+            $backtestParameters[mb_substr($parameter, 0, 1)] = mb_substr($parameter, 1);
+        }
+
+        if (isset($firstDate, $secondDate))
+        {
+            if ($firstDate < $secondDate)
+            {
+                $backtestParameters['from'] = $firstDate->format(TerminalHelper::DATE_FORMAT);
+                $backtestParameters['to']   = $secondDate->format(TerminalHelper::DATE_FORMAT);
+            }
+            elseif ($firstDate > $secondDate)
+            {
+                $backtestParameters['from'] = $secondDate->format(TerminalHelper::DATE_FORMAT);
+                $backtestParameters['to']   = $firstDate->format(TerminalHelper::DATE_FORMAT);
+            }
+        }
+
+        return self::getBacktestReportName($backtestParameters);
+    }
+
     public static function parseFile(string $file): array
     {
         $parameters = [

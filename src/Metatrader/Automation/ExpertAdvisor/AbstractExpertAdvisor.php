@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Metatrader\Automation\ExpertAdvisor;
 
 use App\Metatrader\Automation\Helper\BacktestReportHelper;
+use App\Metatrader\Automation\Helper\TerminalHelper;
 use App\Metatrader\Automation\Interfaces\ExpertAdvisorInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
 {
-    protected const METATRADER_DATE_FORMAT = 'Y.m.d';
     private array        $currentBacktestSettings;
     private string       $name;
     private ParameterBag $parameters;
@@ -68,8 +68,8 @@ abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
             }
 
             yield [
-                'from' => $fromDate->format(self::METATRADER_DATE_FORMAT),
-                'to'   => $limitDate->format(self::METATRADER_DATE_FORMAT),
+                'from' => $fromDate->format(TerminalHelper::TERMINAL_DATE_FORMAT),
+                'to'   => $limitDate->format(TerminalHelper::TERMINAL_DATE_FORMAT),
             ];
 
             $fromDate->modify('+1 month');

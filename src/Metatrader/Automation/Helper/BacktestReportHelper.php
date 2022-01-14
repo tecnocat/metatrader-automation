@@ -57,7 +57,7 @@ class BacktestReportHelper
                 continue;
             }
 
-            $backtestParameters[mb_substr($parameter, 0, 1)] = mb_substr($parameter, 1);
+            $backtestParameters[strtolower(mb_substr($parameter, 0, 1))] = mb_substr($parameter, 1);
         }
 
         if (isset($firstDate, $secondDate))

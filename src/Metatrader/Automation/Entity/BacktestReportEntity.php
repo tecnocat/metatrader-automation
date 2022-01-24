@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=BacktestReportEntityRepository::class)
+ * @ORM\Table(uniqueConstraints={@ORM\UniqueConstraint(columns={"name"})})
  */
 class BacktestReportEntity extends AbstractEntity
 {
@@ -61,7 +62,7 @@ class BacktestReportEntity extends AbstractEntity
      * @ORM\Column(type="string")
      * @Validators\ExpertAdvisor
      */
-    private string $expertAdvisor;
+    private string $expertAdvisorName;
 
     /**
      * @Assert\NotBlank
@@ -87,7 +88,11 @@ class BacktestReportEntity extends AbstractEntity
      * @ORM\Column(type="integer")
      */
     private int $initialDeposit;
-
+    /**
+     * @Assert\NotBlank
+     * @ORM\Column(type="array")
+     */
+    private array $inputs;
     /**
      * @Assert\NotBlank
      * @ORM\Column(type="float")
@@ -165,12 +170,6 @@ class BacktestReportEntity extends AbstractEntity
      * @ORM\Column(type="string")
      */
     private string $name;
-
-    /**
-     * @Assert\NotBlank
-     * @ORM\Column(type="array")
-     */
-    private array $parameters;
 
     /**
      * @Assert\Choice({"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1"})
@@ -310,14 +309,14 @@ class BacktestReportEntity extends AbstractEntity
         $this->expectedPayoff = $expectedPayoff;
     }
 
-    public function getExpertAdvisor(): string
+    public function getExpertAdvisorName(): string
     {
-        return $this->expertAdvisor;
+        return $this->expertAdvisorName;
     }
 
-    public function setExpertAdvisor(string $expertAdvisor): void
+    public function setExpertAdvisorName(string $expertAdvisorName): void
     {
-        $this->expertAdvisor = $expertAdvisor;
+        $this->expertAdvisorName = $expertAdvisorName;
     }
 
     public function getFrom(): \DateTime
@@ -358,6 +357,16 @@ class BacktestReportEntity extends AbstractEntity
     public function setInitialDeposit(int $initialDeposit): void
     {
         $this->initialDeposit = $initialDeposit;
+    }
+
+    public function getInputs(): array
+    {
+        return $this->inputs;
+    }
+
+    public function setInputs(array $inputs): void
+    {
+        $this->inputs = $inputs;
     }
 
     public function getLargestLossTrade(): float
@@ -488,16 +497,6 @@ class BacktestReportEntity extends AbstractEntity
     public function setName(string $name): void
     {
         $this->name = $name;
-    }
-
-    public function getParameters(): array
-    {
-        return $this->parameters;
-    }
-
-    public function setParameters(array $parameters): void
-    {
-        $this->parameters = $parameters;
     }
 
     public function getPeriod(): string

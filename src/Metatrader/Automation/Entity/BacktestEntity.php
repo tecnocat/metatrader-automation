@@ -16,18 +16,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class BacktestEntity extends AbstractEntity
 {
     /**
-     * @Assert\GreaterThanOrEqual(500)
-     * @Assert\NotBlank
-     * @ORM\Column(type="integer")
-     */
-    private int $deposit;
-
-    /**
      * @Assert\NotBlank
      * @ORM\Column(type="string")
      * @Validators\ExpertAdvisor
      */
-    private string $expertAdvisor;
+    private string $expertAdvisorName;
 
     /**
      * @Assert\NotBlank
@@ -37,14 +30,21 @@ class BacktestEntity extends AbstractEntity
     private \DateTime $from;
 
     /**
-     * @Assert\Regex("/^(M|H|D|W|MN)(1|4|5|15|30)-\d{4}\.\d{2}\.\d{2}-\d{4}\.\d{2}\.\d{2}-.*\.html$/")
+     * @Assert\GreaterThanOrEqual(500)
+     * @Assert\NotBlank
+     * @ORM\Column(type="integer")
+     */
+    private int $initialDeposit;
+
+    /**
+     * @Assert\Regex("/^[A-Z]{1}[a-z]+:\.?\w+:(M|H|D|W|MN)(1|4|5|15|30):\d{4}-\d{2}-\d{2}:\d{4}-\d{2}-\d{2}:\d+:.*$/")
      * @ORM\Column(type="string")
      */
-    private string $lastBacktestReport;
+    private string $lastBacktestReportName;
 
     /**
      * @Assert\NotBlank
-     * @Assert\Regex("/^[A-Z]{1}[a-z]+:\.?\w+:(M|H|D|W|MN)(1|4|5|15|30):\d+:\d{4}-\d{2}-\d{2}:\d{4}-\d{2}-\d{2}$/")
+     * @Assert\Regex("/^[A-Z]{1}[a-z]+:\.?\w+:(M|H|D|W|MN)(1|4|5|15|30):\d{4}-\d{2}-\d{2}:\d{4}-\d{2}-\d{2}:\d+$/")
      * @ORM\Column(type="string", length=64)
      */
     private string $name;
@@ -69,24 +69,14 @@ class BacktestEntity extends AbstractEntity
      */
     private \DateTime $to;
 
-    public function getDeposit(): int
+    public function getExpertAdvisorName(): string
     {
-        return $this->deposit;
+        return $this->expertAdvisorName;
     }
 
-    public function setDeposit(int $deposit): void
+    public function setExpertAdvisorName(string $expertAdvisorName): void
     {
-        $this->deposit = $deposit;
-    }
-
-    public function getExpertAdvisor(): string
-    {
-        return $this->expertAdvisor;
-    }
-
-    public function setExpertAdvisor(string $expertAdvisor): void
-    {
-        $this->expertAdvisor = $expertAdvisor;
+        $this->expertAdvisorName = $expertAdvisorName;
     }
 
     public function getFrom(): \DateTime
@@ -99,14 +89,24 @@ class BacktestEntity extends AbstractEntity
         $this->from = $from;
     }
 
-    public function getLastBacktestReport(): string
+    public function getInitialDeposit(): int
     {
-        return $this->lastBacktestReport;
+        return $this->initialDeposit;
     }
 
-    public function setLastBacktestReport(string $lastBacktestReport): void
+    public function setInitialDeposit(int $initialDeposit): void
     {
-        $this->lastBacktestReport = $lastBacktestReport;
+        $this->initialDeposit = $initialDeposit;
+    }
+
+    public function getLastBacktestReportName(): string
+    {
+        return $this->lastBacktestReportName;
+    }
+
+    public function setLastBacktestReportName(string $lastBacktestReportName): void
+    {
+        $this->lastBacktestReportName = $lastBacktestReportName;
     }
 
     public function getName(): string

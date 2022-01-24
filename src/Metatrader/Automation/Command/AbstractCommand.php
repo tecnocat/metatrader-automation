@@ -14,17 +14,20 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\StyleInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 abstract class AbstractCommand extends Command implements CommandInterface, DispatcherInterface
 {
+    private ContainerBagInterface    $containerBag;
     private EventDispatcherInterface $eventDispatcher;
     private InputInterface           $input;
     private SymfonyStyle             $io;
     private OutputInterface          $output;
 
-    public function __construct(EventDispatcherInterface $eventDispatcher)
+    public function __construct(ContainerBagInterface $containerBag, EventDispatcherInterface $eventDispatcher)
     {
+        $this->containerBag    = $containerBag;
         $this->eventDispatcher = $eventDispatcher;
 
         parent::__construct();
@@ -89,6 +92,11 @@ abstract class AbstractCommand extends Command implements CommandInterface, Disp
         return $this->input->getOptions();
     }
 
+    final protected function getParameter(string $name)
+    {
+        return $this->containerBag->get($name);
+    }
+
     final protected function getProgressBar(int $total): ProgressBar
     {
         $spacer = str_repeat(' ', mb_strlen((string) $total) * 2 + 2);
@@ -117,6 +125,11 @@ abstract class AbstractCommand extends Command implements CommandInterface, Disp
         }
 
         return false;
+    }
+
+    final protected function success(string $message): void
+    {
+        $this->getIO()->success($message);
     }
 
     final protected function table(array $headers, array $rows): void

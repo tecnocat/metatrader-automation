@@ -19,7 +19,7 @@ class BacktestType extends AbstractBaseType
             FormEvents::PRE_SUBMIT,
             function (FormEvent $event): void
             {
-                $event->setData(BacktestHelper::addBacktestName($event->getData()));
+                BacktestHelper::addBacktestName($event);
             }
         );
     }

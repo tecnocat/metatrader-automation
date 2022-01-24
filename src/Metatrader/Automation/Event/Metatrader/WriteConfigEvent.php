@@ -8,8 +8,8 @@ use App\Metatrader\Automation\Event\AbstractEvent;
 
 class WriteConfigEvent extends AbstractEvent
 {
-    public const TESTER_CONFIG_TYPE         = 'tester.ini';
-    public const EXPERT_ADVISOR_CONFIG_TYPE = 'expert-advisor.ini';
+    public const EXPERT_ADVISOR_CONFIG_TYPE = 'expert-advisor';
+    public const TERMINAL_CONFIG_TYPE       = 'terminal';
 
     private ExecutionEvent $executionEvent;
     private string         $type;

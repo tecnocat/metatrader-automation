@@ -4,20 +4,28 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Helper;
 
+use Symfony\Component\Form\FormEvent;
+
 class BacktestHelper
 {
-    public static function addBacktestName(array $data): array
+    public static function addBacktestName(FormEvent $event): void
     {
-        $parameters   = [
-            $data['expertAdvisor'],
+        $data         = $event->getData();
+        $data['name'] = self::getBacktestName($data);
+        $event->setData($data);
+    }
+
+    public static function getBacktestName(array $data): string
+    {
+        $parameters = [
+            $data['expertAdvisorName'],
             $data['symbol'],
             $data['period'],
-            $data['deposit'],
             $data['from'],
             $data['to'],
+            $data['initialDeposit'],
         ];
-        $data['name'] = implode(':', $parameters);
 
-        return $data;
+        return implode(':', $parameters);
     }
 }

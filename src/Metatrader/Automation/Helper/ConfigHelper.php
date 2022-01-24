@@ -4,39 +4,22 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Helper;
 
-use App\Metatrader\Automation\Interfaces\ExpertAdvisorInterface;
-
 class ConfigHelper
 {
     public const TESTER_CONFIG_FILE = 'tester.ini';
     public const TESTER_CONFIG_PATH = 'tester';
+    public const TESTER_FILES_PATH  = 'files';
 
-    public static function getBacktestReportHtmlFile(string $terminalPath, array $currentBacktestSettings, bool $relative = false): string
+    public static function getBacktestReportHtmlFile(string $terminalPath, string $backtestReportName, bool $relative = false): string
     {
-        return self::getTerminalFile($terminalPath, $currentBacktestSettings['backtestReportName'], $relative);
+        $backtestReportHtmlFile = self::TESTER_FILES_PATH . DIRECTORY_SEPARATOR . $backtestReportName . '.html';
+
+        return self::getTerminalFile($terminalPath, str_replace(':', '-', $backtestReportHtmlFile), $relative);
     }
 
     public static function getExpertAdvisorConfigFile(string $terminalPath, string $expertAdvisorName, bool $relative = false): string
     {
         return self::getTerminalFile($terminalPath, $expertAdvisorName . '.ini', $relative);
-    }
-
-    public static function getExpertAdvisorInputs(ExpertAdvisorInterface $expertAdvisor): array
-    {
-        $alias  = $expertAdvisor->getAlias();
-        $inputs = [];
-
-        foreach ($expertAdvisor->getCurrentBacktestSettings() as $backtestSettingName => $backtestSettingValue)
-        {
-            if (!isset($alias[$backtestSettingName]))
-            {
-                continue;
-            }
-
-            $inputs[$alias[$backtestSettingName]] = $backtestSettingValue;
-        }
-
-        return $inputs;
     }
 
     public static function getRelativePath(string $fullPath, string $relativePath): string
@@ -49,7 +32,7 @@ class ConfigHelper
         return self::getTerminalFile($terminalPath, self::TESTER_CONFIG_FILE, $relative);
     }
 
-    private static function getTerminalFile(string $terminalPath, string $filename, bool $relative): string
+    public static function getTerminalFile(string $terminalPath, string $filename, bool $relative): string
     {
         return (!$relative ? $terminalPath . DIRECTORY_SEPARATOR : '') . self::TESTER_CONFIG_PATH . DIRECTORY_SEPARATOR . $filename;
     }

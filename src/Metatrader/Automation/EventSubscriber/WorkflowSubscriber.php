@@ -8,14 +8,14 @@ use App\Metatrader\Automation\Annotation\Dependency;
 use App\Metatrader\Automation\Annotation\Subscriber;
 use App\Metatrader\Automation\Entity\BacktestEntity;
 use App\Metatrader\Automation\Entity\BacktestReportEntity;
+use App\Metatrader\Automation\Event\Entity\BuildEntityEvent;
 use App\Metatrader\Automation\Event\Entity\FindEntityEvent;
 use App\Metatrader\Automation\Event\Entity\SaveEntityEvent;
 use App\Metatrader\Automation\Event\Metatrader\ExecutionEvent;
 use App\Metatrader\Automation\Event\Metatrader\FindTerminalEvent;
 use App\Metatrader\Automation\Event\Metatrader\WriteConfigEvent;
-use App\Metatrader\Automation\ExpertAdvisor\AbstractExpertAdvisor;
+use App\Metatrader\Automation\Helper\TickDataSuiteHelper;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
-use Symfony\Component\HttpFoundation\ParameterBag;
 
 /**
  * @Subscriber
@@ -29,37 +29,58 @@ class WorkflowSubscriber extends AbstractEventSubscriber
 
     public function onExecutionEvent(ExecutionEvent $event): void
     {
-        if (!$this->isActiveExpertAdvisor($event))
+        if (!$event->getExpertAdvisor()->isActive())
         {
             $event->addError('The Expert Advisor ' . $event->getExpertAdvisor()->getName() . ' is not active');
 
             return;
         }
 
-        if ($this->isFoundBacktestEntity($event))
+        if ($event->alreadyExecutedBacktest())
         {
-            $lastBacktestReport = $event->getBacktestEntity()->getLastBacktestReport();
+            $lastBacktestReportName = $event->getBacktestEntity()->getLastBacktestReportName();
+        }
+        else
+        {
+            $buildEntityEvent = new BuildEntityEvent(BacktestEntity::class, $event->getBacktestDTO()->toParameters());
+            $this->dispatch($buildEntityEvent);
+
+            if ($buildEntityEvent->hasErrors())
+            {
+                $event->addError('Unable to build backtest entity');
+
+                foreach ($buildEntityEvent->getErrors() as $error)
+                {
+                    $event->addError($error);
+                }
+
+                return;
+            }
+
+            /** @var BacktestEntity $backtestEntity */
+            $backtestEntity = $buildEntityEvent->getEntity();
+            $event->setBacktestEntity($backtestEntity);
         }
 
-        foreach ($event->getExpertAdvisor()->generateBacktestReportName($event->getBacktestEntity()) as $backtestReportName)
+        foreach ($event->getExpertAdvisor()->getIteration($event->getBacktestDTO()) as $iteration)
         {
-            if (!isset($continue) && isset($lastBacktestReport) && $lastBacktestReport !== $backtestReportName)
+            $backtestExecutionDTO = $event->getExpertAdvisor()->getBacktestExecutionDTO($event->getBacktestDTO(), $iteration);
+
+            if (!isset($continue) && !empty($lastBacktestReportName) && $lastBacktestReportName !== $backtestExecutionDTO->name)
             {
                 continue;
             }
 
-            $continue = true;
+            $event->setBacktestExecutionDTO($backtestExecutionDTO);
+            $continue        = true;
+            $criteria        = ['name' => $backtestExecutionDTO->name];
+            $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
+            $this->dispatch($findEntityEvent);
 
-            if ($this->isFoundBacktestReportEntity($event, $backtestReportName))
+            if ($findEntityEvent->isFound())
             {
-                // TODO: Remove this direct output or change to output event
-                echo $backtestReportName . ' already executed, skip...' . PHP_EOL;
-
                 continue;
             }
-
-            // TODO: Remove this direct output or change to output event
-            echo $backtestReportName . ' processing...' . PHP_EOL;
 
             if (!$this->findTerminal($event))
             {
@@ -68,7 +89,7 @@ class WorkflowSubscriber extends AbstractEventSubscriber
                 return;
             }
 
-            if (!$this->writeConfig($event, WriteConfigEvent::TESTER_CONFIG_TYPE))
+            if (!$this->writeConfig($event, WriteConfigEvent::TERMINAL_CONFIG_TYPE))
             {
                 $event->addError('Unable to build the Terminal config');
 
@@ -83,43 +104,16 @@ class WorkflowSubscriber extends AbstractEventSubscriber
             }
 
             $terminalDTO = $event->getTerminalDTO();
+            pclose(popen(sprintf('start /b %s %s', $terminalDTO->exe, $terminalDTO->config), 'r'));
+            TickDataSuiteHelper::wait($terminalDTO);
 
-            // TODO: Tick data suite semaphore
-            // TODO: Metatrader backtest launch
-
-            // TODO: Sync mode
-            exec(sprintf('"%s" "%s"', $terminalDTO->terminalExe, $terminalDTO->terminalConfig));
-
-            // TODO: Async mode
-            //pclose(popen($debug = sprintf('start /b %s %s', $terminalDTO->terminalExe, $terminalDTO->terminalConfig), 'r'));
-
-            // TODO: Save backtest report to database
-
-            $event->getBacktestEntity()->setLastBacktestReport($backtestReportName);
+            $event->getBacktestEntity()->setLastBacktestReportName($backtestExecutionDTO->name);
 
             if (!$this->isSavedEntity($event))
             {
                 return;
             }
         }
-    }
-
-    private function writeConfig(ExecutionEvent $event, string $type): bool
-    {
-        $writeConfigEvent = new WriteConfigEvent($event, $type);
-        $this->dispatch($writeConfigEvent);
-
-        if ($writeConfigEvent->hasErrors())
-        {
-            foreach ($writeConfigEvent->getErrors() as $error)
-            {
-                $event->addError($error);
-            }
-
-            return false;
-        }
-
-        return true;
     }
 
     private function findTerminal(ExecutionEvent $event): bool
@@ -130,55 +124,6 @@ class WorkflowSubscriber extends AbstractEventSubscriber
         return $findTerminalEvent->isFound();
     }
 
-    private function getExpertAdvisorInstance(string $name): AbstractExpertAdvisor
-    {
-        $class      = AbstractExpertAdvisor::getExpertAdvisorClass($name);
-        $parameters = new ParameterBag($this->containerBag->get('metatrader')['expert_advisors'][$name] ?? []);
-
-        return new $class($name, $parameters);
-    }
-
-    private function isActiveExpertAdvisor(ExecutionEvent $event): bool
-    {
-        $event->setExpertAdvisor($this->getExpertAdvisorInstance($event->getBacktestEntity()->getExpertAdvisor()));
-
-        return $event->getExpertAdvisor()->isActive();
-    }
-
-    private function isFoundBacktestEntity(ExecutionEvent $event): bool
-    {
-        $criteria        = ['name' => $event->getBacktestEntity()->getName()];
-        $findEntityEvent = new FindEntityEvent(BacktestEntity::class, $criteria);
-        $this->dispatch($findEntityEvent);
-
-        if ($findEntityEvent->isFound())
-        {
-            /** @var BacktestEntity $backtestEntity */
-            $backtestEntity = $findEntityEvent->getEntity();
-            $event->setBacktestEntity($backtestEntity);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private function isFoundBacktestReportEntity(ExecutionEvent $event, string $backtestReportName): bool
-    {
-        // TODO: Backtest report name must be a valid unique identifier by itself
-        $criteria        = [
-            'name'           => $backtestReportName,
-            'expertAdvisor'  => $event->getExpertAdvisor()->getName(),
-            'initialDeposit' => $event->getBacktestEntity()->getDeposit(),
-            'period'         => $event->getBacktestEntity()->getPeriod(),
-            'symbol'         => $event->getBacktestEntity()->getSymbol(),
-        ];
-        $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
-        $this->dispatch($findEntityEvent);
-
-        return $findEntityEvent->isFound();
-    }
-
     private function isSavedEntity(ExecutionEvent $event): bool
     {
         $saveEntityEvent = new SaveEntityEvent($event->getBacktestEntity());
@@ -187,6 +132,24 @@ class WorkflowSubscriber extends AbstractEventSubscriber
         if ($saveEntityEvent->hasErrors())
         {
             foreach ($saveEntityEvent->getErrors() as $error)
+            {
+                $event->addError($error);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function writeConfig(ExecutionEvent $event, string $type): bool
+    {
+        $writeConfigEvent = new WriteConfigEvent($event, $type);
+        $this->dispatch($writeConfigEvent);
+
+        if ($writeConfigEvent->hasErrors())
+        {
+            foreach ($writeConfigEvent->getErrors() as $error)
             {
                 $event->addError($error);
             }

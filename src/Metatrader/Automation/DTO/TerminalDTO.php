@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\DTO;
 
-use Spatie\DataTransferObject\DataTransferObject as DTO;
-
-class TerminalDTO extends DTO
+class TerminalDTO extends AbstractDTO
 {
-    public string $terminalConfig;
-    public string $terminalExe;
-    public string $terminalId;
-    public string $terminalPath;
-    public int    $terminalVersion;
+    public string $config;
+    public string $exe;
+    public string $id;
+    public string $path;
+    public int    $version;
     private bool  $busy;
 
     public function __construct(array $parameters = [])

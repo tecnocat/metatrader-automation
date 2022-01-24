@@ -11,6 +11,7 @@ use Symfony\Component\Finder\Finder;
 class TerminalHelper
 {
     public const TERMINAL_CLUSTER_EXE_PATTERN  = '/[A-Z]:\\\\MT[4-5]-\d+\\\\terminal(64)?\.exe/';
+    public const TERMINAL_CLUSTER_ID           = '/[A-Z]:\\\\MT[4-5]-(\d+)\\\\/';
     public const TERMINAL_CLUSTER_PATH_PATTERN = '/[A-Z]:\\\\MT[4-5]-\d+\\\\/';
     public const TERMINAL_DATE_FORMAT          = 'Y.m.d';
 
@@ -58,39 +59,43 @@ class TerminalHelper
         }
 
         $originalTerminalDTO = self::findOriginalTerminal($dataPath);
-        $sourcePath          = dirname($originalTerminalDTO->terminalExe);
+        $sourcePath          = dirname($originalTerminalDTO->exe);
         $filesystem          = new Filesystem();
+        $paths               = [
+            DIRECTORY_SEPARATOR . 'config',
+            DIRECTORY_SEPARATOR . 'history',
+            DIRECTORY_SEPARATOR . 'MQL4' . DIRECTORY_SEPARATOR . 'Experts',
+            DIRECTORY_SEPARATOR . 'MQL4' . DIRECTORY_SEPARATOR . 'Include',
+            DIRECTORY_SEPARATOR . 'templates',
+        ];
 
         for ($i = 1; $i <= WindowsHelper::getNumberOfCores(); ++$i)
         {
             // TODO: Only supports MT4 for now
             $clusterPath = implode(DIRECTORY_SEPARATOR, [mb_substr($sourcePath, 0, 2), 'MT4-' . $i]);
+            $terminalExe = $clusterPath . DIRECTORY_SEPARATOR . 'terminal.exe';
 
             if (!is_dir($clusterPath))
             {
                 $filesystem->mirror($sourcePath, $clusterPath);
-                $terminalExe = $clusterPath . DIRECTORY_SEPARATOR . 'terminal.exe';
                 exec(sprintf('"%s" /?', $terminalExe));
+            }
 
-                foreach (self::findTerminals($dataPath, false) as $terminalDTO)
+            foreach (self::findTerminals($dataPath, false) as $terminalDTO)
+            {
+                if ($terminalExe === $terminalDTO->exe)
                 {
-                    if ($terminalExe === $terminalDTO->terminalExe)
+                    foreach ($paths as $path)
                     {
-                        $paths = [
-                            DIRECTORY_SEPARATOR . 'config',
-                            DIRECTORY_SEPARATOR . 'history',
-                            DIRECTORY_SEPARATOR . 'MQL4' . DIRECTORY_SEPARATOR . 'Experts',
-                            DIRECTORY_SEPARATOR . 'MQL4' . DIRECTORY_SEPARATOR . 'Include',
-                            DIRECTORY_SEPARATOR . 'templates',
-                        ];
-
-                        foreach ($paths as $path)
-                        {
-                            $filesystem->mirror($originalTerminalDTO->terminalPath . $path, $terminalDTO->terminalPath . $path, null, ['override' => true]);
-                        }
-
-                        break;
+                        $filesystem->mirror($originalTerminalDTO->path . $path, $terminalDTO->path . $path, null, ['override' => true]);
                     }
+
+                    if (!file_exists($terminalDTO->path . DIRECTORY_SEPARATOR . '_cluster-' . $i))
+                    {
+                        mkdir($terminalDTO->path . DIRECTORY_SEPARATOR . '_cluster-' . $i);
+                    }
+
+                    break;
                 }
             }
         }
@@ -126,23 +131,28 @@ class TerminalHelper
         }
 
         $finder = new Finder();
-        $finder->files()->in($dataPath)->depth(1)->name('origin.txt');
+        $finder
+            ->files()
+            ->in($dataPath)
+            ->depth(1)
+            ->name('origin.txt')
+        ;
         $terminals = [];
 
         foreach ($finder as $file)
         {
-            $terminalExe     = self::getTerminalExe(preg_replace('/[[:^print:]]/', '', file_get_contents($file->getPathname())));
-            $terminalId      = $file->getRelativePath();
-            $terminalPath    = dirname($file->getPathname());
-            $terminalConfig  = ConfigHelper::getTerminalConfigFile($terminalPath);
-            $terminalVersion = self::getTerminalVersion($terminalPath);
-            $terminals[]     = new TerminalDTO(
+            $id          = $file->getRelativePath();
+            $path        = dirname($file->getPathname());
+            $config      = ConfigHelper::getTerminalConfigFile($path);
+            $exe         = self::getTerminalExe(preg_replace('/[[:^print:]]/', '', file_get_contents($file->getPathname())));
+            $version     = self::getTerminalVersion($path);
+            $terminals[] = new TerminalDTO(
                 [
-                    'terminalConfig'  => $terminalConfig,
-                    'terminalExe'     => $terminalExe,
-                    'terminalId'      => $terminalId,
-                    'terminalPath'    => $terminalPath,
-                    'terminalVersion' => $terminalVersion,
+                    'id'      => $id,
+                    'config'  => $config,
+                    'exe'     => $exe,
+                    'path'    => $path,
+                    'version' => $version,
                 ]
             );
         }
@@ -151,6 +161,19 @@ class TerminalHelper
         {
             throw new \RuntimeException('Not found any terminal configured in path ' . $dataPath);
         }
+
+        usort($terminals, function ($a, $b)
+        {
+            preg_match(self::TERMINAL_CLUSTER_ID, $a->exe, $matchesA);
+            preg_match(self::TERMINAL_CLUSTER_ID, $b->exe, $matchesB);
+
+            if (isset($matchesA[1], $matchesB[1]))
+            {
+                return $matchesA[1] > $matchesB[1] ? 1 : -1;
+            }
+
+            return isset($matchesA[1]) ? -1 : 1;
+        });
 
         return self::$cache[$cacheKey] = $terminals;
     }
@@ -199,12 +222,12 @@ class TerminalHelper
 
     private static function isCluster(TerminalDTO $terminalDTO): bool
     {
-        return (bool) preg_match(self::TERMINAL_CLUSTER_PATH_PATTERN, $terminalDTO->terminalExe);
+        return (bool) preg_match(self::TERMINAL_CLUSTER_PATH_PATTERN, $terminalDTO->exe);
     }
 
     private static function isSupported(TerminalDTO $terminalDTO): bool
     {
-        return 4 === $terminalDTO->terminalVersion;
+        return 4 === $terminalDTO->version;
     }
 
     /**
@@ -218,7 +241,7 @@ class TerminalHelper
         {
             $terminalDTO->setFree();
 
-            if (in_array($terminalDTO->terminalExe, $terminalsRunning, true))
+            if (in_array($terminalDTO->exe, $terminalsRunning, true))
             {
                 $terminalDTO->setBusy();
             }

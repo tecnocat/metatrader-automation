@@ -38,22 +38,33 @@ class MetatraderBacktestImportCommand extends AbstractCommand
 
         $progressBar = $this->getProgressBar($finder->count());
 
+        // TODO: Make a global event to import to allow call from generate command
         foreach ($finder as $file)
         {
-            $name            = BacktestReportHelper::normalizeBacktestReportName($file->getFilename());
-            $criteria        = ['name' => $name];
-            $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
-            $this->dispatch($findEntityEvent);
-
-            if ($findEntityEvent->isFound())
+            // TODO: Delete helper, make an event instead
+            if (!BacktestReportHelper::isValid($file->getRealPath()))
             {
-                $progressBar->setMessage("<fg=cyan>$name</> <fg=yellow>already imported, skip...</>");
+                $progressBar->setMessage('<fg=cyan>' . $file->getFilename() . '</> <fg=yellow>invalid results, skip...</>');
                 $progressBar->advance();
 
                 continue;
             }
 
-            $buildEntityEvent = new BuildEntityEvent(BacktestReportEntity::class, BacktestReportHelper::parseFile($file->getRealPath()));
+            // TODO: Delete helper, make an event instead
+            $parameters      = BacktestReportHelper::readFile($file->getRealPath());
+            $criteria        = ['name' => $parameters['name']];
+            $findEntityEvent = new FindEntityEvent(BacktestReportEntity::class, $criteria);
+            $this->dispatch($findEntityEvent);
+
+            if ($findEntityEvent->isFound())
+            {
+                $progressBar->setMessage('<fg=cyan>' . $file->getFilename() . '</> <fg=yellow>already imported, skip...</>');
+                $progressBar->advance();
+
+                continue;
+            }
+
+            $buildEntityEvent = new BuildEntityEvent(BacktestReportEntity::class, $parameters);
             $this->dispatch($buildEntityEvent);
 
             if ($this->hasErrors($buildEntityEvent))
@@ -69,7 +80,7 @@ class MetatraderBacktestImportCommand extends AbstractCommand
                 return Command::FAILURE;
             }
 
-            $progressBar->setMessage("<fg=cyan>$name</> <fg=green>imported successfully!</>");
+            $progressBar->setMessage('<fg=cyan>' . $file->getFilename() . '</> <fg=green>imported successfully!</>');
             $progressBar->advance();
         }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\ExpertAdvisor;
 
+use App\Metatrader\Automation\DTO\BacktestDTO;
+use App\Metatrader\Automation\DTO\BacktestExecutionDTO;
 use App\Metatrader\Automation\Helper\BacktestReportHelper;
 use App\Metatrader\Automation\Helper\TerminalHelper;
 use App\Metatrader\Automation\Interfaces\ExpertAdvisorInterface;
@@ -11,7 +13,6 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 
 abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
 {
-    private array        $currentBacktestSettings;
     private string       $name;
     private ParameterBag $parameters;
 
@@ -21,19 +22,16 @@ abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
         $this->parameters = $parameters;
     }
 
-    public function getCurrentBacktestSettings(): array
-    {
-        return $this->currentBacktestSettings;
-    }
-
-    final public function setCurrentBacktestSettings(array $currentBacktestSettings): void
-    {
-        $this->currentBacktestSettings = $currentBacktestSettings;
-    }
-
     final public static function getExpertAdvisorClass(string $expertAdvisorName): string
     {
         return __NAMESPACE__ . '\\' . $expertAdvisorName;
+    }
+
+    final public function getBacktestExecutionDTO(BacktestDTO $backtestDTO, array $iteration): BacktestExecutionDTO
+    {
+        $parameters = BacktestReportHelper::transformParameters(array_merge($backtestDTO->toParameters(), $iteration));
+
+        return new BacktestExecutionDTO($parameters);
     }
 
     final public function getName(): string
@@ -51,10 +49,38 @@ abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
         return $this->parameters->getBoolean('active');
     }
 
-    final protected function dateRangeIterator(\DateTime $from, \DateTime $to, int $stepMonths): \Generator
+    final protected function loadIterations(BacktestDTO $backtestDTO): \Generator
     {
-        $fromDate = clone $from;
-        $toDate   = clone $to;
+        // TODO: How to fix 'Cannot traverse an already closed generator' ?
+        // TODO: Try https://github.com/PatchRanger/cartesian-iterator
+        $iterations = [iterator_to_array($this->dateRangeIterator($backtestDTO->from, $backtestDTO->to))];
+
+        foreach ($this->getParameters()->get('inputs') as $inputName => $inputData)
+        {
+            if (is_array($inputData) || (!is_array($inputData) && false === mb_strpos((string) $inputData, ',')))
+            {
+                $iterations[] = iterator_to_array($this->simpleIterator(BacktestReportHelper::INPUTS_PARAMETER_PREFIX . $inputName, (array) $inputData));
+
+                continue;
+            }
+
+            [$min, $max, $step] = array_map('trim', explode(',', $inputData));
+            $range              = [
+                'min'  => $min,
+                'max'  => $max,
+                'step' => $step,
+            ];
+            $iterations[] = iterator_to_array($this->minMaxIterator(BacktestReportHelper::INPUTS_PARAMETER_PREFIX . $inputName, $range));
+        }
+
+        return $this->iterate($iterations);
+    }
+
+    private function dateRangeIterator(\DateTime $from, \DateTime $to): \Generator
+    {
+        $fromDate   = clone $from;
+        $toDate     = clone $to;
+        $stepMonths = 12;
 
         while ($fromDate < $toDate)
         {
@@ -76,15 +102,7 @@ abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
         }
     }
 
-    final protected function getBacktestReportName(array $backtestSettings): string
-    {
-        // TODO: This sounds bad... Is really needed?
-        $this->setCurrentBacktestSettings($backtestSettings);
-
-        return BacktestReportHelper::getBacktestReportName($backtestSettings);
-    }
-
-    final protected function iterate(array $array): \Generator
+    private function iterate(array $array): \Generator
     {
         foreach (array_pop($array) as $value)
         {
@@ -102,15 +120,22 @@ abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
         }
     }
 
-    final protected function minMaxIterator(string $name, array $range): \Generator
+    private function minMaxIterator(string $name, array $range): \Generator
     {
-        foreach (range($range['min'], $range['max'], $range['step']) as $value)
+        if ($range['min'] === $range['max'])
         {
-            yield [$name => $value];
+            yield [$name => (int) $range['min']];
+        }
+        else
+        {
+            foreach (range($range['min'], $range['max'], $range['step']) as $value)
+            {
+                yield [$name => $value];
+            }
         }
     }
 
-    final protected function simpleIterator(string $name, array $values): \Generator
+    private function simpleIterator(string $name, array $values): \Generator
     {
         foreach ($values as $value)
         {

@@ -24,7 +24,7 @@ class ConfigSubscriber extends AbstractEventSubscriber
 
                 break;
 
-            case WriteConfigEvent::TESTER_CONFIG_TYPE:
+            case WriteConfigEvent::TERMINAL_CONFIG_TYPE:
                 $this->writeTerminalConfig($event);
 
                 break;
@@ -36,18 +36,18 @@ class ConfigSubscriber extends AbstractEventSubscriber
 
     private function writeExpertAdvisorConfig(WriteConfigEvent $event): void
     {
-        $backtestEntity = $event->getExecutionEvent()->getBacktestEntity();
-        $expertAdvisor  = $event->getExecutionEvent()->getExpertAdvisor();
-        $terminalDTO    = $event->getExecutionEvent()->getTerminalDTO();
-        $config         = [
+        $backtestExecutionDTO = $event->getExecutionEvent()->getBacktestExecutionDTO();
+        $expertAdvisor        = $event->getExecutionEvent()->getExpertAdvisor();
+        $terminalDTO          = $event->getExecutionEvent()->getTerminalDTO();
+        $config               = [
             'common' => [
                 'positions' => '2',
-                'deposit'   => $backtestEntity->getDeposit(),
+                'deposit'   => $backtestExecutionDTO->initialDeposit,
                 'currency'  => 'EUR',
                 'fitnes'    => '0',
                 'genetic'   => '1',
             ],
-            'inputs' => ConfigHelper::getExpertAdvisorInputs($expertAdvisor),
+            'inputs' => $backtestExecutionDTO->inputs,
             'limits' => [
                 'balance_enable'         => '0',
                 'balance'                => '200.00',
@@ -68,15 +68,15 @@ class ConfigSubscriber extends AbstractEventSubscriber
             ],
         ];
 
-        self::writeXml(ConfigHelper::getExpertAdvisorConfigFile($terminalDTO->terminalPath, $expertAdvisor->getName()), $config);
+        self::writeXml(ConfigHelper::getExpertAdvisorConfigFile($terminalDTO->path, $expertAdvisor->getName()), $config);
     }
 
     private function writeTerminalConfig(WriteConfigEvent $event): void
     {
-        $backtestEntity = $event->getExecutionEvent()->getBacktestEntity();
-        $expertAdvisor  = $event->getExecutionEvent()->getExpertAdvisor();
-        $terminalDTO    = $event->getExecutionEvent()->getTerminalDTO();
-        $config         = [
+        $backtestExecutionDTO = $event->getExecutionEvent()->getBacktestExecutionDTO();
+        $expertAdvisor        = $event->getExecutionEvent()->getExpertAdvisor();
+        $terminalDTO          = $event->getExecutionEvent()->getTerminalDTO();
+        $config               = [
             '// common' => [
                 'Profile'           => 'default',
                 'AutoConfiguration' => 'true',
@@ -92,23 +92,23 @@ class ConfigSubscriber extends AbstractEventSubscriber
             ],
             '// test'   => [
                 'TestExpert'           => $expertAdvisor->getName(),
-                'TestExpertParameters' => ConfigHelper::getExpertAdvisorConfigFile($terminalDTO->terminalPath, $expertAdvisor->getName(), true),
-                'TestSymbol'           => $backtestEntity->getSymbol(),
-                'TestPeriod'           => $backtestEntity->getPeriod(),
+                'TestExpertParameters' => ConfigHelper::getExpertAdvisorConfigFile($terminalDTO->path, $expertAdvisor->getName(), true),
+                'TestSymbol'           => $backtestExecutionDTO->symbol,
+                'TestPeriod'           => $backtestExecutionDTO->period,
                 'TestModel'            => '0',
                 'TestSpread'           => '15',
                 'TestOptimization'     => 'false',
                 'TestDateEnable'       => 'true',
-                'TestFromDate'         => $backtestEntity->getFrom()->format(TerminalHelper::TERMINAL_DATE_FORMAT),
-                'TestToDate'           => $backtestEntity->getTo()->format(TerminalHelper::TERMINAL_DATE_FORMAT),
-                'TestReport'           => ConfigHelper::getBacktestReportHtmlFile($terminalDTO->terminalPath, $expertAdvisor->getCurrentBacktestSettings(), true),
+                'TestFromDate'         => $backtestExecutionDTO->from->format(TerminalHelper::TERMINAL_DATE_FORMAT),
+                'TestToDate'           => $backtestExecutionDTO->to->format(TerminalHelper::TERMINAL_DATE_FORMAT),
+                'TestReport'           => ConfigHelper::getBacktestReportHtmlFile($terminalDTO->path, $backtestExecutionDTO->name, true),
                 'TestReplaceReport'    => 'true',
                 'TestShutdownTerminal' => 'true',
                 'TestVisualEnable'     => 'false',
             ],
         ];
 
-        self::writeIni($terminalDTO->terminalConfig, $config);
+        self::writeIni($terminalDTO->config, $config);
     }
 
     // TODO: Mix with toXml

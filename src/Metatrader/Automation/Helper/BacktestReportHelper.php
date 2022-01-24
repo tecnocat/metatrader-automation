@@ -6,97 +6,64 @@ namespace App\Metatrader\Automation\Helper;
 
 class BacktestReportHelper
 {
-    private const ANY_DATE   = '\d{4}\.\d{2}.\d{2}';
-    private const ANY_NUMBER = '[-+]?\d+[\.|\,]?\d*';
-    private const ANY_WORD   = '[\w\s]+';
+    public const  INPUTS_PARAMETER_PREFIX = 'inputs';
+    private const ANY_DATE                = '\d{4}\.\d{2}.\d{2}';
+    private const ANY_NUMBER              = '[-+]?\d+[\.|\,]?\d*';
+    private const ANY_WORD                = '[\w\s]+';
 
-    public static function getBacktestReportName(array $backtestSettings): string
-    {
-        ksort($backtestSettings);
+    private static array $cache;
 
-        $backtestReportName = $backtestSettings['period'] . '-' . $backtestSettings['from'] . '-' . $backtestSettings['to'];
-
-        foreach ($backtestSettings as $parameterName => $parameterValue)
-        {
-            switch ($parameterName)
-            {
-                case 'from':
-                case 'period':
-                case 'to':
-                    break;
-
-                default:
-                    $backtestReportName .= '-' . mb_substr($parameterName, 0, 1) . $parameterValue;
-            }
-        }
-
-        return $backtestReportName . '.html';
-    }
-
-    public static function normalizeBacktestReportName(string $backtestReportName): string
-    {
-        $backtestParameters = [];
-        $periods            = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1', 'MN1'];
-
-        foreach (explode('-', str_replace('.html', '', $backtestReportName)) as $parameter)
-        {
-            if (in_array($parameter, $periods, true))
-            {
-                $backtestParameters['period'] = $parameter;
-
-                continue;
-            }
-
-            $date = \DateTime::createFromFormat(TerminalHelper::TERMINAL_DATE_FORMAT, $parameter);
-
-            if ($date instanceof \DateTime)
-            {
-                $secondDate = isset($firstDate) ? $date : null;
-                $firstDate  = $firstDate ?? $date;
-
-                continue;
-            }
-
-            $backtestParameters[strtolower(mb_substr($parameter, 0, 1))] = mb_substr($parameter, 1);
-        }
-
-        if (isset($firstDate, $secondDate))
-        {
-            if ($firstDate < $secondDate)
-            {
-                $backtestParameters['from'] = $firstDate->format(TerminalHelper::TERMINAL_DATE_FORMAT);
-                $backtestParameters['to']   = $secondDate->format(TerminalHelper::TERMINAL_DATE_FORMAT);
-            }
-            elseif ($firstDate > $secondDate)
-            {
-                $backtestParameters['from'] = $secondDate->format(TerminalHelper::TERMINAL_DATE_FORMAT);
-                $backtestParameters['to']   = $firstDate->format(TerminalHelper::TERMINAL_DATE_FORMAT);
-            }
-        }
-
-        return self::getBacktestReportName($backtestParameters);
-    }
-
-    public static function parseFile(string $file): array
+    public static function getBacktestReportName(array $data): string
     {
         $parameters = [
-            'name' => self::normalizeBacktestReportName(basename($file)),
+            $data['expertAdvisorName'],
+            $data['symbol'],
+            $data['period'],
+            $data['from'],
+            $data['to'],
+            $data['initialDeposit'],
         ];
+        $name       = implode(':', $parameters);
+        $inputs     = unserialize($data[self::INPUTS_PARAMETER_PREFIX]);
+        ksort($inputs);
 
-        foreach (self::readFile($file) as $number => $line)
+        foreach ($inputs as $parameterName => $parameterValue)
+        {
+            $name .= ':' . $parameterName . '-' . $parameterValue;
+        }
+
+        return $name;
+    }
+
+    public static function isValid(string $file): bool
+    {
+        $lines = self::loadFile($file);
+
+        return false !== mb_strpos($lines[37], '99.90%') && false !== mb_strpos($lines[37], 'Modelling quality');
+    }
+
+    public static function readFile(string $file): array
+    {
+        $parameters = [];
+        self::fixFile($file);
+
+        foreach (self::loadFile($file) as $number => $line)
         {
             foreach (self::parseLine(++$number, trim($line)) as $parameterName => $parameterValue)
             {
                 $parameters[$parameterName] = $parameterValue;
             }
-
-            if (52 === $number)
-            {
-                break;
-            }
         }
 
-        return self::transforms($parameters);
+        $parameters         = self::transform($parameters);
+        $parameters['name'] = self::getBacktestReportName($parameters);
+
+        return $parameters;
+    }
+
+    public static function transformParameters(array $parameters): array
+    {
+        return self::transform($parameters);
     }
 
     private static function commonParser(string $line, string $regex): array
@@ -112,11 +79,61 @@ class BacktestReportHelper
         return $result;
     }
 
+    private static function evictCache(): void
+    {
+        self::$cache = [];
+    }
+
+    private static function fixFile(string $file): void
+    {
+        $lines = self::loadFile($file);
+
+        if (false !== mb_strpos($lines[35], ';'))
+        {
+            $search  = $lines[35];
+            $replace = str_replace('; ', '<br>', $search);
+            $reading = fopen($file, 'r');
+            $writing = fopen($file . '.tmp', 'w');
+
+            while (!feof($reading))
+            {
+                fputs($writing, str_replace($search, $replace, fgets($reading)));
+            }
+
+            fclose($reading);
+            fclose($writing);
+            rename($file . '.tmp', $file);
+            self::evictCache();
+        }
+    }
+
     private static function getMatches(string $regex, string $line): array
     {
         preg_match_all($regex, $line, $matches);
 
         return $matches;
+    }
+
+    private static function loadFile(string $file): array
+    {
+        $cacheKey = md5($file);
+
+        if (!isset(self::$cache[$cacheKey]))
+        {
+            $handle = new \SplFileObject($file);
+            $lines  = [];
+
+            while (!$handle->eof() && count($lines) < 52)
+            {
+                $lines[] = $handle->fgets();
+            }
+
+            self::$cache = [
+                $cacheKey => $lines,
+            ];
+        }
+
+        return self::$cache[$cacheKey];
     }
 
     private static function parseLine(int $number, string $line): array
@@ -152,7 +169,7 @@ class BacktestReportHelper
 
                 foreach ($matches[0] as $index => $match)
                 {
-                    $result[self::toAttribute('input' . $matches[1][$index])] = $matches[2][$index];
+                    $result[self::toAttribute(self::INPUTS_PARAMETER_PREFIX . $matches[1][$index])] = $matches[2][$index];
                 }
 
                 return $result;
@@ -190,50 +207,50 @@ class BacktestReportHelper
         }
     }
 
-    private static function readFile(string $file): \Generator
-    {
-        $handle = new \SplFileObject($file);
-
-        while (!$handle->eof())
-        {
-            yield $handle->fgets();
-        }
-
-        // @codeCoverageIgnoreStart
-        $handle = null;
-    }
-
-    // @codeCoverageIgnoreEnd
-
     private static function toAttribute(string $attribute): string
     {
         return lcfirst(str_replace(' ', '', ucwords($attribute)));
     }
 
-    private static function transforms(array $parameters): array
+    private static function transform(array $parameters): array
     {
         $parameters                   = array_map('trim', $parameters);
         $parameters['from']           = str_replace('.', '-', $parameters['from']);
         $parameters['to']             = str_replace('.', '-', $parameters['to']);
         $parameters['initialDeposit'] = str_replace('.00', '', $parameters['initialDeposit']);
 
-        if ('Variable' === $parameters['spread'])
+        if (isset($parameters['expertAdvisor']))
+        {
+            $parameters['expertAdvisorName'] = $parameters['expertAdvisor'];
+            unset($parameters['expertAdvisor']);
+        }
+
+        if (isset($parameters['spread']) && 'Variable' === $parameters['spread'])
         {
             $parameters['spread'] = -1;
         }
 
+        return self::transformInputs($parameters);
+    }
+
+    private static function transformInputs(array $parameters): array
+    {
         $inputs = [];
 
         foreach ($parameters as $parameterName => $parameterValue)
         {
-            if ('input' === mb_substr($parameterName, 0, 5))
+            if (self::INPUTS_PARAMETER_PREFIX === mb_substr($parameterName, 0, mb_strlen(self::INPUTS_PARAMETER_PREFIX)))
             {
                 unset($parameters[$parameterName]);
-                $inputs[mb_substr($parameterName, 5)] = $parameterValue;
+                $inputs[mb_substr($parameterName, mb_strlen(self::INPUTS_PARAMETER_PREFIX))] = $parameterValue;
             }
         }
 
-        $parameters['parameters'] = serialize($inputs);
+        if (!empty($inputs))
+        {
+            ksort($inputs);
+            $parameters[self::INPUTS_PARAMETER_PREFIX] = serialize($inputs);
+        }
 
         return $parameters;
     }

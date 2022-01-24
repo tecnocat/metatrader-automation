@@ -4,22 +4,34 @@ declare(strict_types=1);
 
 namespace App\Metatrader\Automation\Event\Metatrader;
 
+use App\Metatrader\Automation\DTO\BacktestDTO;
+use App\Metatrader\Automation\DTO\BacktestExecutionDTO;
 use App\Metatrader\Automation\DTO\TerminalDTO;
 use App\Metatrader\Automation\Entity\BacktestEntity;
-use App\Metatrader\Automation\Entity\BacktestReportEntity;
 use App\Metatrader\Automation\Event\AbstractEvent;
 use App\Metatrader\Automation\Interfaces\ExpertAdvisorInterface;
 
 class ExecutionEvent extends AbstractEvent
 {
+    private BacktestDTO            $backtestDTO;
     private BacktestEntity         $backtestEntity;
-    private BacktestReportEntity   $backtestReportEntity;
+    private BacktestExecutionDTO   $backtestExecutionDTO;
     private ExpertAdvisorInterface $expertAdvisor;
     private TerminalDTO            $terminalDTO;
 
-    public function __construct(BacktestEntity $backtestEntity)
+    public function __construct(BacktestDTO $backtestDTO)
     {
-        $this->backtestEntity = $backtestEntity;
+        $this->backtestDTO = $backtestDTO;
+    }
+
+    public function alreadyExecutedBacktest(): bool
+    {
+        return isset($this->backtestEntity);
+    }
+
+    public function getBacktestDTO(): BacktestDTO
+    {
+        return $this->backtestDTO;
     }
 
     public function getBacktestEntity(): BacktestEntity
@@ -27,19 +39,19 @@ class ExecutionEvent extends AbstractEvent
         return $this->backtestEntity;
     }
 
-    public function setBacktestEntity(BacktestEntity $backtestEntity): void
+    public function setBacktestEntity(BacktestEntity $backtestEntity)
     {
         $this->backtestEntity = $backtestEntity;
     }
 
-    public function getBacktestReportEntity(): BacktestReportEntity
+    public function getBacktestExecutionDTO(): BacktestExecutionDTO
     {
-        return $this->backtestReportEntity;
+        return $this->backtestExecutionDTO;
     }
 
-    public function setBacktestReportEntity(BacktestReportEntity $backtestReportEntity): void
+    public function setBacktestExecutionDTO(BacktestExecutionDTO $backtestExecutionDTO): void
     {
-        $this->backtestReportEntity = $backtestReportEntity;
+        $this->backtestExecutionDTO = $backtestExecutionDTO;
     }
 
     public function getExpertAdvisor(): ExpertAdvisorInterface

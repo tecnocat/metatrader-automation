@@ -9,19 +9,14 @@ parameters:
         active: false
       Prudencio:
         active: true
-        distance:
-          max: 1000
-          min: 100
-          step: 50
-        hedging:
-          max: 2000
-          min: 100
-          step: 50
-        profit:
-          max: 50
-          min: 10
-          step: 10
-        step_months: 12
+        inputs:
+          # min, max, increment | single value | array
+          Beneficio: 10, 50, 10
+          Cobertura: 100, 2000, 50
+          Distancia: 100, 1000, 50
+          Exponencial: 'false'
+          LogLevel: 1
+          Multiplicador: 1
       Wilson:
         active: false
 services:

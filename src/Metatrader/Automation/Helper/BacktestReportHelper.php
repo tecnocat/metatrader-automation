@@ -37,8 +37,7 @@ class BacktestReportHelper
 
     public static function isValid(string $file): bool
     {
-        self::fixLongParametersEntry($file);
-
+        self::fixFile($file);
         $lines = self::loadFile($file);
 
         return false !== mb_strpos($lines[36], '99.90%') && false !== mb_strpos($lines[36], 'Modelling quality');
@@ -46,8 +45,8 @@ class BacktestReportHelper
 
     public static function readFile(string $file): array
     {
-        $parameters = [];
         self::fixFile($file);
+        $parameters = [];
 
         foreach (self::loadFile($file) as $number => $line)
         {
@@ -88,35 +87,23 @@ class BacktestReportHelper
 
     private static function fixFile(string $file): void
     {
-        $lines = self::loadFile($file);
+        $lines   = self::loadFile($file);
+        $fixFile = false !== mb_strpos($lines[35], ';');
+        $fixFile = $fixFile || false !== mb_strpos($lines[35], 'LogLevel=1');
+        $fixFile = $fixFile || $lines[36] === '</td></tr>' . PHP_EOL;
 
-        if (false !== mb_strpos($lines[35], ';'))
+        if ($fixFile)
         {
-            $search  = $lines[35];
-            $replace = str_replace('; ', '<br>', $search);
-            $reading = fopen($file, 'r');
-            $writing = fopen($file . '.tmp', 'w');
+            $lines     = file($file);
+            $lines[35] = str_replace('; ', '<br>', $lines[35]);
+            $lines[35] = str_replace('LogLevel=1<br>', '', $lines[35]);
 
-            while (!feof($reading))
+            if ($lines[36] === '</td></tr>' . PHP_EOL)
             {
-                fputs($writing, str_replace($search, $replace, fgets($reading)));
+                $lines[35] = trim($lines[35]) . $lines[36];
+                unset($lines[36]);
             }
 
-            fclose($reading);
-            fclose($writing);
-            rename($file . '.tmp', $file);
-            self::evictCache();
-        }
-    }
-
-    private static function fixLongParametersEntry(string $file): void
-    {
-        $lines = file($file);
-
-        if ($lines[36] === '</td></tr>' . PHP_EOL)
-        {
-            $lines[35] = trim($lines[35]) . $lines[36];
-            unset($lines[36]);
             $writing = fopen($file . '.tmp', 'w');
 
             while ($line = array_shift($lines))

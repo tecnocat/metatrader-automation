@@ -82,6 +82,12 @@ abstract class AbstractExpertAdvisor implements ExpertAdvisorInterface
         $toDate     = clone $to;
         $stepMonths = 12;
 
+        // We need the full date range on first pass to caching all the ticks data
+        yield [
+            'from' => $fromDate->format(TerminalHelper::TERMINAL_DATE_FORMAT),
+            'to'   => $toDate->format(TerminalHelper::TERMINAL_DATE_FORMAT),
+        ];
+
         while ($fromDate < $toDate)
         {
             $limitDate = (clone $fromDate)->modify("+$stepMonths month");

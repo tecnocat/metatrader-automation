@@ -5,7 +5,6 @@ parameters:
     expert_advisors:
       Bartolo:
         active: true
-        # ESTRATEGIA_C
         inputs:
           Tiempo: 5, 1440, 5
       Fermin:
@@ -13,7 +12,6 @@ parameters:
       Prudencio:
         active: true
         inputs:
-          # min, max, increment | single value | array
           Beneficio: 10, 50, 10
           Cobertura: 100, 2000, 50
           Distancia: 100, 1000, 50

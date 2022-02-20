@@ -32,7 +32,13 @@ class WindowsHelper
     {
         $terminalsRunning = [];
         exec('PowerShell Get-Process ^| Format-List Path 2> NUL', $terminalsRunning);
+        $customHalt       = preg_grep('/notepad\.exe/', $terminalsRunning);
         $terminalsRunning = preg_grep(TerminalHelper::TERMINAL_CLUSTER_EXE_PATTERN, $terminalsRunning);
+
+        if (!empty($customHalt))
+        {
+            throw new \RuntimeException('Detected notepad.exe, stop the current process now!');
+        }
 
         return array_map(function ($path)
         {

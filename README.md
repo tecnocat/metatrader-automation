@@ -20,7 +20,7 @@ composer install
 
 ### How to run ⁉️
 
-#### Backtest generate reports command 💻 (‼️ not yet completed ‼️)
+#### Backtest generate reports command 💻
 
 ````bash
 php bin/console metatrader:backtest:generate --help
@@ -30,6 +30,12 @@ php bin/console metatrader:backtest:generate --help
 
 ````bash
 php bin/console metatrader:backtest:import --help
+````
+
+#### Backtest backup reports command 💻
+
+````bash
+php bin/console metatrader:backtest:backup --help
 ````
 
 ## Implementation 🌠
@@ -49,14 +55,52 @@ See `config/services.yaml` to set up all the settings for your Expert Advisors a
 ---
 parameters:
   metatrader:
-    data_path: C:\Path\To\Data\Directory # Usually C:\Users\You\AppData\Roaming\MetaQuotes\Terminal
+    
+    # The Metatrader data path usually is C:\Users\You\AppData\Roaming\MetaQuotes\Terminal
+    data_path: C:\Path\To\Data\Directory
+    
+    # List of your Expert Advisors
     expert_advisors:
+
+      # The name of your Expert Advisor must be the same as your ExpertAdvisor PHP class name
       YourExpertAdvisorName:
-        active: true # Required
-        limit: 10
+
+        # Required
+        active: true
+
+        # Allowed formats are: min, max, increment | single value | array
+        # NOTE: Booleans must be single quoted
+        inputs:
+
+          # The name of the Expert Advisor inputs must be the same as variable in .ex4 file 
+          # PHP               MT4 .ex4 
+          Ticks: 10, 100, 5 # input int  Ticks         = 0;
+          Hedging: 'false'  # input bool Hedging       = false;
+          LotMultiplier:    # input int  LotMultiplier = 1  
+            - 1
+            - 5
+            - 15
+
+      # The name of your Expert Advisor must be the same as your ExpertAdvisor PHP class name
       AnotherExpertAdvisorName:
-        active: false # Required
-        foo: bar
+
+        # Required
+        active: false
+
+        # Allowed formats are: min, max, increment | single value | array
+        # NOTE: Booleans must be single quoted
+        inputs:
+
+          # The name of the Expert Advisor inputs must be the same as variable in .ex4 file 
+          # PHP                MT4 .ex4 
+          TakeProfit: 'true' # input bool TakeProfit = true;
+          StopLoss: 'true'   # input bool StopLoss   = true;
+          Lots:              # input int  Lots       = 1
+            - 0.01
+            - 0.05
+            - 0.25
+            - 0.60
+            - 0.80
 ````
 
 ### PHP Expert Advisor implementation 🤖
@@ -70,91 +114,24 @@ namespace App\Metatrader\Automation\ExpertAdvisor;
 
 use App\Metatrader\Automation\Interfaces\EntityInterface;
 
+// The name of your Expert Advisor must be the same as your ExpertAdvisor.ex4 file
 class YourExpertAdvisorName extends AbstractExpertAdvisor
 {
-    public function generateBacktestReportName(EntityInterface $backtestEntity): \Generator
+    public function getIteration(BacktestDTO $backtestDTO): \Generator
     {
-        // You can fetch Expert Advisor parameters calling $this->getParameters() 
-        $limit = $this->getParameters()->get('limit');
-
-        // Your iterations parameters to generate a unique backtest report name
-        // At the moment iterator_to_array is required because 2 level of Generators
-        $iterations = [
-
-            // Date range iterator
-            iterator_to_array(
-                $this->dateRangeIterator(
-                    new \DateTime('2013-01-01'), // Start date
-                    new \DateTime('2013-06-01'), // End date
-                    3                            // How months each step?
-                )
-            ),
-            // This will generate a date range array like this:
-            // ['from' => '2013.01.01', 'to' => '2013.04.01']
-            // ['from' => '2013.02.01', 'to' => '2013.05.01']
-            // ['from' => '2013.03.01', 'to' => '2013.06.01']
-            // ['from' => '2013.04.01', 'to' => '2013.06.01']
-            // ['from' => '2013.05.01', 'to' => '2013.06.01']
-
-            // Min max iterator
-            iterator_to_array(
-                $this->minMaxIterator(
-                    'ticks',          // Name of the parameter
-                    [
-                        'min' => 100, // Start range
-                        'max' => 300, // End range
-                        'step' => 50, // How many steps?
-                    ]
-                )
-            ),
-            // This will generate a range array like this:
-            // ['ticks' => 100]
-            // ['ticks' => 150]
-            // ['ticks' => 200]
-            // ['ticks' => 250]
-            // ['ticks' => 300]
-
-            // Simple iterator
-            iterator_to_array(
-                $this->simpleIterator(
-                    'period',           // Name of the parameter
-                    ['M15', 'H4', 'D1'] // Elements to iterate
-                )
-            ),
-            // This will generate a range array like this:
-            // ['period' => 'M15']
-            // ['period' => 'H4']
-            // ['period' => 'D1']
-        ];
-
-        // Your main iteration loop, this generates a cartesian combination of all iterations
-        foreach ($this->iterate($iterations) as $iteration)
+        // The system load all iterations for you using Backtest information
+        // and config for the current Expert Advisor inputs (services.yaml)
+        foreach ($this->loadIterations($backtestDTO) as $iteration)
         {
-            yield $this->getBacktestReportName($iteration);
-            // This will generate a report names like this:
-            // M15-2013.01.01-2013.04.01-t100.html
-            // M15-2013.02.01-2013.05.01-t100.html
-            // M15-2013.03.01-2013.06.01-t100.html
-            // etc...
+            // All the input parameters must be prefixed to manage
+            $prefix = BacktestReportHelper::INPUTS_PARAMETER_PREFIX;
+            
+            // Now you can create mutations or new input parameters
+            $iteration[$prefix . 'MaxTicks'] = $iteration[$prefix . 'Ticks'] * 2;
+            $iteration[$prefix . 'Hedging']  = $iteration[$prefix . 'Ticks'] > 50;
 
-            // H4-2013.01.01-2013.04.01-t100.html
-            // H4-2013.02.01-2013.05.01-t100.html
-            // H4-2013.03.01-2013.06.01-t100.html
-            // etc...
-
-            // D1-2013.01.01-2013.04.01-t100.html
-            // D1-2013.02.01-2013.05.01-t100.html
-            // D1-2013.03.01-2013.06.01-t100.html
-            // etc...
+            yield $iteration;
         }
-    }
-
-    public function getAlias(): array
-    {
-        return [
-            // PHP name     MT4 EA name (.ex4)
-            'iteration' => 'InputIteration',
-        ];
     }
 }
 ````
@@ -163,25 +140,22 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 
 #### Current development 🔥
 
-* Refactor every class object / entity to a Data Transfer Object
-* System to handle start / stop of Tick Data Suite during backtest
+* Auto improve parameters for expert advisor reading stored backtests
+* Purge the logs between executions to free a lot of space on disk
 
 #### Next steps ✨
 
 * Multiple Expert Advisors and symbols to backtesting at same time
 * Analyze database to allow relaunch the already executed tests
 * May be store backtest report image in the database or folder
-* Put Expert Advisor input parameters inside class as properties
-* Backtest report names must include deposit or remove period dates
-* Auto improve parameters for expert advisor reading stored backtests
 * Refactor error handling, pass event to event in a other event
-* Refactor import backtest report and make unnecessary the name
 
 #### Known bugs 🐞
 
 * The import command take too much time between backtest reports
 * Date validator is failing when one of the date fields is empty
 * The minimum range for dates is a month, but script accept any
+* Many PHPUnit tests are broken due to heavy development, sorry ;-)
 
 #### Already done ✔️
 
@@ -197,3 +171,10 @@ class YourExpertAdvisorName extends AbstractExpertAdvisor
 * Workflow steps to detect Metatrader 4 instances free to run
 * Cluster generator (copy many instances of main Metatrader 4)
 * Improve the iteration steps generators to simplify Expert Advisors
+* Refactor import backtest report and make unnecessary the name
+* Refactor every class object / entity to a Data Transfer Object
+* System to handle start / stop of Tick Data Suite during backtest
+* Put Expert Advisor input parameters inside class as properties
+* Backtest report names must include deposit or remove period dates
+* Implement Bartolo Expert Advisor to allow testing multi-strategy
+* Backup the Backtest reports and archive all in structured folders
